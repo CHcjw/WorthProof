@@ -21,7 +21,7 @@ Start-Sleep -Seconds 4
 try {
     $health = Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:8100/health"
     Write-Host $health.Content
-    Write-Host "ValuSee started at http://127.0.0.1:8100/"
+    Write-Host "WorthProof started at http://127.0.0.1:8100/"
 } catch {
     Write-Host $_.Exception.Message
     throw

@@ -1,1 +1,1 @@
-"""ValuSee application package."""
+"""WorthProof application package."""

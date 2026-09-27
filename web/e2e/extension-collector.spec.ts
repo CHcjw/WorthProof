@@ -19,11 +19,11 @@ const collectorPath = path.resolve(process.cwd(), '../extension/content.js');
 
 async function captureFixture(page: import('@playwright/test').Page, url: string, html: string): Promise<Capture> {
   await page.addInitScript(() => {
-    const target = window as typeof window & { __valueseeListener?: (...args: unknown[]) => void; chrome?: unknown };
+    const target = window as typeof window & { __worthproofListener?: (...args: unknown[]) => void; chrome?: unknown };
     target.chrome = {
       runtime: {
         onMessage: {
-          addListener(listener: (...args: unknown[]) => void) { target.__valueseeListener = listener; },
+          addListener(listener: (...args: unknown[]) => void) { target.__worthproofListener = listener; },
         },
       },
     };
@@ -32,9 +32,9 @@ async function captureFixture(page: import('@playwright/test').Page, url: string
   await page.goto(url);
   await page.addScriptTag({ path: collectorPath });
   return page.evaluate(() => {
-    const target = window as typeof window & { __valueseeListener?: (...args: unknown[]) => void };
+    const target = window as typeof window & { __worthproofListener?: (...args: unknown[]) => void };
     let captured: Capture | undefined;
-    target.__valueseeListener?.({ type: 'VALUSee_COLLECT_PRODUCT_V6' }, {}, (response: Capture) => { captured = response; });
+    target.__worthproofListener?.({ type: 'WORTHPROOF_COLLECT_PRODUCT_V6' }, {}, (response: Capture) => { captured = response; });
     if (!captured) throw new Error('collector did not respond');
     return captured;
   });

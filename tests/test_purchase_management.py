@@ -17,7 +17,7 @@ def _purchase(store: ShoppingStore, user_id: str = "u1") -> dict[str, object]:
 
 def test_purchase_record_generates_after_sales_reminders():
     with TemporaryDirectory() as tmp:
-        store = ShoppingStore(Path(tmp) / "valuesee-test.db")
+        store = ShoppingStore(Path(tmp) / "worthproof-test.db")
         record = store.create_purchase(
             user_id="u1",
             product={
@@ -49,7 +49,7 @@ def test_purchase_record_generates_after_sales_reminders():
 
 def test_purchase_attachments_are_owner_scoped():
     with TemporaryDirectory() as tmp:
-        store = ShoppingStore(Path(tmp) / "valuesee-test.db")
+        store = ShoppingStore(Path(tmp) / "worthproof-test.db")
         purchase = _purchase(store)
         metadata = {"attachment_type": "invoice", "original_name": "invoice.pdf", "content_type": "application/pdf", "size_bytes": 12, "sha256": "abc", "storage_backend": "local", "storage_key": "data/attachments/test.pdf"}
         attachment = store.create_purchase_attachment("u1", str(purchase["purchase_id"]), metadata)
@@ -66,7 +66,7 @@ def test_purchase_attachments_are_owner_scoped():
 
 def test_support_ticket_conversation_is_scoped_and_stateful():
     with TemporaryDirectory() as tmp:
-        store = ShoppingStore(Path(tmp) / "valuesee-test.db")
+        store = ShoppingStore(Path(tmp) / "worthproof-test.db")
         purchase = _purchase(store)
         ticket = store.create_support_ticket("u1", {"purchase_id": purchase["purchase_id"], "category": "price_protection", "subject": "Need help", "content": "Price dropped"})
         assert ticket["status"] == "open" and ticket["messages"][0]["actor_role"] == "user"
@@ -92,7 +92,7 @@ def test_support_ticket_conversation_is_scoped_and_stateful():
 
 def test_price_protection_claim_is_scoped_and_records_savings_once():
     with TemporaryDirectory() as tmp:
-        store = ShoppingStore(Path(tmp) / "valuesee-test.db")
+        store = ShoppingStore(Path(tmp) / "worthproof-test.db")
         purchase = _purchase(store)
         claim = store.save_price_protection_claim("u1", str(purchase["purchase_id"]), {"status": "succeeded", "approved_amount": 20, "requested_amount": 20})
         assert claim["evidence_source"] == "user_reported"
@@ -110,7 +110,7 @@ def test_price_protection_claim_is_scoped_and_records_savings_once():
 
 def test_account_export_and_delete_cover_support_conversation():
     with TemporaryDirectory() as tmp:
-        path = Path(tmp) / "valuesee-test.db"
+        path = Path(tmp) / "worthproof-test.db"
         store, auth = ShoppingStore(path), AuthStore(path)
         user = auth.register("support-export@example.com", "strong-password", "Support")
         ticket = store.create_support_ticket(user["user_id"], {"subject": "Export me", "content": "Conversation body"})

@@ -67,29 +67,29 @@ def test_marketplace_mutations_require_authentication_in_production(monkeypatch)
 
 def test_production_config_rejects_weak_secrets_and_accepts_explicit_tls_origin(monkeypatch):
     monkeypatch.setenv("APP_ENV", "production")
-    monkeypatch.setenv("VALUSee_JWT_SECRET", "weak")
-    monkeypatch.setenv("VALUSee_METRICS_TOKEN", "also-weak")
-    monkeypatch.setenv("VALUSee_MFA_ENCRYPTION_KEY", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
-    monkeypatch.setenv("VALUSee_ADMIN_EMAILS", "admin@example.com")
+    monkeypatch.setenv("WORTHPROOF_JWT_SECRET", "weak")
+    monkeypatch.setenv("WORTHPROOF_METRICS_TOKEN", "also-weak")
+    monkeypatch.setenv("WORTHPROOF_MFA_ENCRYPTION_KEY", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
+    monkeypatch.setenv("WORTHPROOF_ADMIN_EMAILS", "admin@example.com")
     monkeypatch.setenv("ALLOWED_HOSTS", "shop.example.com")
     monkeypatch.setenv("ALLOWED_ORIGINS", "https://shop.example.com")
-    monkeypatch.setenv("VALUSee_PUBLIC_BASE_URL", "https://shop.example.com")
-    with pytest.raises(RuntimeError, match="VALUSee_JWT_SECRET"):
+    monkeypatch.setenv("WORTHPROOF_PUBLIC_BASE_URL", "https://shop.example.com")
+    with pytest.raises(RuntimeError, match="WORTHPROOF_JWT_SECRET"):
         validate_production_config()
 
-    monkeypatch.setenv("VALUSee_JWT_SECRET", "j" * 40)
-    monkeypatch.setenv("VALUSee_METRICS_TOKEN", "m" * 32)
-    monkeypatch.setenv("VALUSee_MFA_ENCRYPTION_KEY", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
+    monkeypatch.setenv("WORTHPROOF_JWT_SECRET", "j" * 40)
+    monkeypatch.setenv("WORTHPROOF_METRICS_TOKEN", "m" * 32)
+    monkeypatch.setenv("WORTHPROOF_MFA_ENCRYPTION_KEY", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
     validate_production_config()
 
 
 def test_production_config_rejects_wildcards_and_non_tls_origins(monkeypatch):
     monkeypatch.setenv("APP_ENV", "production")
-    monkeypatch.setenv("VALUSee_JWT_SECRET", "j" * 40)
-    monkeypatch.setenv("VALUSee_METRICS_TOKEN", "m" * 32)
-    monkeypatch.setenv("VALUSee_MFA_ENCRYPTION_KEY", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
-    monkeypatch.setenv("VALUSee_ADMIN_EMAILS", "admin@example.com")
-    monkeypatch.setenv("VALUSee_PUBLIC_BASE_URL", "https://shop.example.com")
+    monkeypatch.setenv("WORTHPROOF_JWT_SECRET", "j" * 40)
+    monkeypatch.setenv("WORTHPROOF_METRICS_TOKEN", "m" * 32)
+    monkeypatch.setenv("WORTHPROOF_MFA_ENCRYPTION_KEY", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
+    monkeypatch.setenv("WORTHPROOF_ADMIN_EMAILS", "admin@example.com")
+    monkeypatch.setenv("WORTHPROOF_PUBLIC_BASE_URL", "https://shop.example.com")
     monkeypatch.setenv("ALLOWED_HOSTS", "*")
     monkeypatch.setenv("ALLOWED_ORIGINS", "http://shop.example.com")
     with pytest.raises(RuntimeError, match="explicit"):

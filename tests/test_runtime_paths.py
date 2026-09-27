@@ -4,22 +4,22 @@ from app.core.paths import resolve_runtime_path, runtime_data_dir, runtime_root
 
 
 def test_runtime_root_uses_vercel_tmp(monkeypatch):
-    monkeypatch.delenv("VALUSee_DATA_DIR", raising=False)
+    monkeypatch.delenv("WORTHPROOF_DATA_DIR", raising=False)
     monkeypatch.setenv("VERCEL", "1")
-    assert runtime_root() == Path("/tmp/valuesee")
+    assert runtime_root() == Path("/tmp/worthproof")
 
 
 def test_configured_runtime_root_takes_precedence(monkeypatch, tmp_path):
     monkeypatch.setenv("VERCEL", "1")
-    monkeypatch.setenv("VALUSee_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("WORTHPROOF_DATA_DIR", str(tmp_path))
     assert runtime_root() == tmp_path.resolve()
     assert runtime_data_dir("uploads") == tmp_path.resolve() / "data" / "uploads"
 
 
 def test_relative_store_path_uses_vercel_runtime_root(monkeypatch):
-    monkeypatch.delenv("VALUSee_DATA_DIR", raising=False)
+    monkeypatch.delenv("WORTHPROOF_DATA_DIR", raising=False)
     monkeypatch.setenv("VERCEL", "1")
-    assert resolve_runtime_path("data/valuesee.db") == Path("/tmp/valuesee/data/valuesee.db")
+    assert resolve_runtime_path("data/worthproof.db") == Path("/tmp/worthproof/data/worthproof.db")
 
 
 def test_absolute_store_path_is_preserved(monkeypatch, tmp_path):

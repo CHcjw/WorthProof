@@ -41,7 +41,7 @@ export function AuthPage() {
   const [captchaImage, setCaptchaImage] = useState('');
   const [captchaCode, setCaptchaCode] = useState('');
   const captchaRequestKey = useRef('');
-  const title = mode === 'login' ? '登录 ValuSee' : mode === 'register' ? '创建 ValuSee 账户' : mode === 'forgot' ? '找回密码' : '重置密码';
+  const title = mode === 'login' ? '登录 WorthProof' : mode === 'register' ? '创建 WorthProof 账户' : mode === 'forgot' ? '找回密码' : '重置密码';
   const subtitle = mode === 'login' ? '进入你的购物决策、降价提醒和售后记录。' : mode === 'register' ? '验证邮箱后同步收藏、报告和监控数据。' : mode === 'forgot' ? '我们会向注册邮箱发送一次性重置链接。' : '请输入两次新密码完成更新。';
 
   useEffect(() => {
@@ -151,8 +151,8 @@ export function AuthPage() {
           mfa_code: mfaCode,
         }),
       });
-      localStorage.setItem('valuesee-token', result.access_token);
-      localStorage.setItem('valuesee-account-name', result.user.display_name || email);
+      localStorage.setItem('worthproof-token', result.access_token);
+      localStorage.setItem('worthproof-account-name', result.user.display_name || email);
       window.location.href = redirectTarget();
     } catch (error) {
       setNotice(error instanceof Error ? error.message : '账户操作失败');
@@ -170,13 +170,13 @@ export function AuthPage() {
     <main className="auth-page">
       <a className="auth-back" href="/">
         <ArrowLeft size={16} />
-        返回 ValuSee
+        返回 WorthProof
       </a>
       <section className="auth-card" aria-labelledby="auth-title">
         <div className="auth-brand">
           <img src="/brand/logo-icon.png" alt="" />
           <div>
-            <strong>ValuSee</strong>
+            <strong>WorthProof</strong>
             <span>AI 购物决策与省钱助手</span>
           </div>
         </div>

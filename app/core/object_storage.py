@@ -21,7 +21,7 @@ def _s3_client():
 def ensure_bucket_exists() -> None:
     from botocore.exceptions import ClientError
 
-    bucket = os.getenv("S3_BUCKET", "valuesee-uploads")
+    bucket = os.getenv("S3_BUCKET", "worthproof-uploads")
     client = _s3_client()
     try:
         client.head_bucket(Bucket=bucket)
@@ -35,7 +35,7 @@ def ensure_bucket_exists() -> None:
 def persist_upload(local_path: Path, content_type: str, prefix: str = "product-images") -> dict[str, str]:
     endpoint = os.getenv("S3_ENDPOINT_URL", "").strip()
     configured_bucket = os.getenv("S3_BUCKET", "").strip()
-    bucket = configured_bucket or "valuesee-uploads"
+    bucket = configured_bucket or "worthproof-uploads"
     if not endpoint and not configured_bucket:
         return {"backend": "local", "key": str(local_path.relative_to(runtime_root())).replace("\\", "/")}
 
@@ -62,7 +62,7 @@ def read_stored_object(backend: str, key: str) -> bytes | None:
 
     client = _s3_client()
     try:
-        response = client.get_object(Bucket=os.getenv("S3_BUCKET", "valuesee-uploads"), Key=key)
+        response = client.get_object(Bucket=os.getenv("S3_BUCKET", "worthproof-uploads"), Key=key)
         body = response["Body"]
         try:
             return body.read()
@@ -85,7 +85,7 @@ def delete_stored_object(backend: str, key: str) -> bool:
         if backend != "s3":
             return False
         client = _s3_client()
-        client.delete_object(Bucket=os.getenv("S3_BUCKET", "valuesee-uploads"), Key=key)
+        client.delete_object(Bucket=os.getenv("S3_BUCKET", "worthproof-uploads"), Key=key)
         return True
     except Exception:
         return False

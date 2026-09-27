@@ -44,9 +44,9 @@ export default defineConfig({
       env: {
         ...process.env,
         APP_ENV: 'test',
-        VALUSee_JWT_SECRET: 'e2e-only-secret-not-for-production-use',
-        VALUSee_SQLITE_PATH: '.test-tmp/e2e-valuesee.db',
-        VALUSee_EMAIL_TRANSPORT: 'console',
+        WORTHPROOF_JWT_SECRET: 'e2e-only-secret-not-for-production-use',
+        WORTHPROOF_SQLITE_PATH: '.test-tmp/e2e-worthproof.db',
+        WORTHPROOF_EMAIL_TRANSPORT: 'console',
       },
     },
     {
@@ -55,7 +55,7 @@ export default defineConfig({
       url: 'http://127.0.0.1:5174',
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
-      env: { ...process.env, VALUSee_API_TARGET: 'http://127.0.0.1:8101' },
+      env: { ...process.env, WORTHPROOF_API_TARGET: 'http://127.0.0.1:8101' },
     },
   ],
 });

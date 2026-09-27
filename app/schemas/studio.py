@@ -357,7 +357,7 @@ class MemoryConfirmRequest(BaseModel):
 
 
 class LearningChatRequest(BaseModel):
-    topic: str = "ValuSee"
+    topic: str = "WorthProof"
     level: str = "beginner"
     question: str
     answer: Optional[str] = None

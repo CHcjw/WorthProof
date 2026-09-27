@@ -340,7 +340,7 @@ class RealMCPProvider:
                     "params": {
                         "protocolVersion": "2024-11-05",
                         "capabilities": {},
-                        "clientInfo": {"name": "ValuSee", "version": "0.1.0"},
+                        "clientInfo": {"name": "WorthProof", "version": "0.1.0"},
                     },
                 },
             )

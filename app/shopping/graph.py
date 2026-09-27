@@ -159,7 +159,7 @@ def _intent_agent(state: ShoppingState) -> ShoppingState:
     payload, result = _run_shopping_agent(
         agent="shopping_intent",
         prompt_version="shopping_intent.v1",
-        system_prompt="你是 ValuSee 的购物意图 Agent。只基于用户目标和档案提取预算、场景、偏好、风险边界和缺失信息。返回 JSON，不要编造商品事实。",
+        system_prompt="你是 WorthProof 的购物意图 Agent。只基于用户目标和档案提取预算、场景、偏好、风险边界和缺失信息。返回 JSON，不要编造商品事实。",
         user_prompt=json.dumps({"goal": state.get("goal", ""), "profile": profile}, ensure_ascii=False),
         fallback=fallback,
     )
@@ -519,7 +519,7 @@ def _orchestrate_next_actions(state: ShoppingState) -> ShoppingState:
 def _report(state: ShoppingState) -> ShoppingState:
     fallback_report = _build_report(state)
     report_result = llm_provider.generate_with_status(
-        "你是 ValuSee 购物 Reporter Agent。基于规则事实和各 Agent 解释生成中文购买决策报告。价格、风险等级、同款关系和推荐索引必须原样保留；缺少证据时明确说明，不得编造。输出 Markdown。",
+        "你是 WorthProof 购物 Reporter Agent。基于规则事实和各 Agent 解释生成中文购买决策报告。价格、风险等级、同款关系和推荐索引必须原样保留；缺少证据时明确说明，不得编造。输出 Markdown。",
         json.dumps({
             "rule_facts": {
                 "matches": state.get("same_item_matches", []),

@@ -1,29 +1,29 @@
-name: valuesee
+name: worthproof
 
 x-app-environment: &app-environment
   APP_ENV: production
-  DATABASE_URL: postgresql://valuesee:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/valuesee
+  DATABASE_URL: postgresql://worthproof:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/worthproof
   REDIS_URL: redis://redis:6379/0
-  RABBITMQ_URL: amqp://valuesee:${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD}@rabbitmq:5672/%2F
+  RABBITMQ_URL: amqp://worthproof:${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD}@rabbitmq:5672/%2F
   S3_ENDPOINT_URL: http://minio:9000
-  S3_BUCKET: valuesee-uploads
+  S3_BUCKET: worthproof-uploads
   S3_ACCESS_KEY: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
   S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
-  VALUSee_JWT_SECRET: ${VALUSee_JWT_SECRET:?set VALUSee_JWT_SECRET}
-  VALUSee_METRICS_TOKEN: ${VALUSee_METRICS_TOKEN:?set VALUSee_METRICS_TOKEN}
-  VALUSee_MFA_ENCRYPTION_KEY: ${VALUSee_MFA_ENCRYPTION_KEY:?set VALUSee_MFA_ENCRYPTION_KEY}
+  WORTHPROOF_JWT_SECRET: ${WORTHPROOF_JWT_SECRET:?set WORTHPROOF_JWT_SECRET}
+  WORTHPROOF_METRICS_TOKEN: ${WORTHPROOF_METRICS_TOKEN:?set WORTHPROOF_METRICS_TOKEN}
+  WORTHPROOF_MFA_ENCRYPTION_KEY: ${WORTHPROOF_MFA_ENCRYPTION_KEY:?set WORTHPROOF_MFA_ENCRYPTION_KEY}
   ALLOWED_HOSTS: ${ALLOWED_HOSTS:?set ALLOWED_HOSTS}
   ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?set ALLOWED_ORIGINS}
-  VALUSee_ADMIN_EMAILS: ${VALUSee_ADMIN_EMAILS:?set VALUSee_ADMIN_EMAILS}
-  VALUSee_PUBLIC_BASE_URL: ${VALUSee_PUBLIC_BASE_URL:?set VALUSee_PUBLIC_BASE_URL}
+  WORTHPROOF_ADMIN_EMAILS: ${WORTHPROOF_ADMIN_EMAILS:?set WORTHPROOF_ADMIN_EMAILS}
+  WORTHPROOF_PUBLIC_BASE_URL: ${WORTHPROOF_PUBLIC_BASE_URL:?set WORTHPROOF_PUBLIC_BASE_URL}
   FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:?set FORWARDED_ALLOW_IPS}
-  VALUSee_MONITOR_INTERVAL_SECONDS: "60"
+  WORTHPROOF_MONITOR_INTERVAL_SECONDS: "60"
   OPENAI_API_KEY: ${OPENAI_API_KEY:-}
   OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
   OPENAI_WIRE_API: ${OPENAI_WIRE_API:-chat_completions}
   DEV_AGENT_LLM_MODEL: ${DEV_AGENT_LLM_MODEL:-gpt-5.5}
-  VALUSee_VISION_MODEL: ${VALUSee_VISION_MODEL:-gpt-5.5}
-  VALUSee_VISION_MODELS: ${VALUSee_VISION_MODELS:-gpt-5.5}
+  WORTHPROOF_VISION_MODEL: ${WORTHPROOF_VISION_MODEL:-gpt-5.5}
+  WORTHPROOF_VISION_MODELS: ${WORTHPROOF_VISION_MODELS:-gpt-5.5}
   OPENAI_VISION_FALLBACK_API_KEY: ${OPENAI_VISION_FALLBACK_API_KEY:-}
   OPENAI_VISION_FALLBACK_BASE_URL: ${OPENAI_VISION_FALLBACK_BASE_URL:-}
   OPENAI_VISION_FALLBACK_MODEL: ${OPENAI_VISION_FALLBACK_MODEL:-gpt-5.5}
@@ -43,14 +43,14 @@ x-app-environment: &app-environment
   DEV_AGENT_EMBEDDING_DIM: ${DEV_AGENT_EMBEDDING_DIM:-1536}
   DEV_AGENT_LLM_PRICE_GPT_4O_MINI_INPUT_PER_1M: ${DEV_AGENT_LLM_PRICE_GPT_4O_MINI_INPUT_PER_1M:-}
   DEV_AGENT_LLM_PRICE_GPT_4O_MINI_OUTPUT_PER_1M: ${DEV_AGENT_LLM_PRICE_GPT_4O_MINI_OUTPUT_PER_1M:-}
-  VALUSee_SMTP_HOST: ${VALUSee_SMTP_HOST:-}
-  VALUSee_SMTP_PORT: ${VALUSee_SMTP_PORT:-465}
-  VALUSee_SMTP_USERNAME: ${VALUSee_SMTP_USERNAME:-}
-  VALUSee_SMTP_PASSWORD: ${VALUSee_SMTP_PASSWORD:-}
-  VALUSee_SMTP_FROM: ${VALUSee_SMTP_FROM:-}
-  VALUSee_SMTP_SSL: ${VALUSee_SMTP_SSL:-true}
-  VALUSee_NOTIFICATION_WEBHOOK_URL: ${VALUSee_NOTIFICATION_WEBHOOK_URL:-}
-  VALUSee_NOTIFICATION_WEBHOOK_SECRET: ${VALUSee_NOTIFICATION_WEBHOOK_SECRET:-}
+  WORTHPROOF_SMTP_HOST: ${WORTHPROOF_SMTP_HOST:-}
+  WORTHPROOF_SMTP_PORT: ${WORTHPROOF_SMTP_PORT:-465}
+  WORTHPROOF_SMTP_USERNAME: ${WORTHPROOF_SMTP_USERNAME:-}
+  WORTHPROOF_SMTP_PASSWORD: ${WORTHPROOF_SMTP_PASSWORD:-}
+  WORTHPROOF_SMTP_FROM: ${WORTHPROOF_SMTP_FROM:-}
+  WORTHPROOF_SMTP_SSL: ${WORTHPROOF_SMTP_SSL:-true}
+  WORTHPROOF_NOTIFICATION_WEBHOOK_URL: ${WORTHPROOF_NOTIFICATION_WEBHOOK_URL:-}
+  WORTHPROOF_NOTIFICATION_WEBHOOK_SECRET: ${WORTHPROOF_NOTIFICATION_WEBHOOK_SECRET:-}
   JD_APP_KEY: ${JD_APP_KEY:-}
   JD_APP_SECRET: ${JD_APP_SECRET:-}
   JD_UNION_PID: ${JD_UNION_PID:-}
@@ -66,7 +66,7 @@ x-app-environment: &app-environment
   PDD_CUSTOM_PARAMETERS: ${PDD_CUSTOM_PARAMETERS:-}
   PDD_ADAPTER_BASE_URL: ${PDD_ADAPTER_BASE_URL:-}
   PDD_ADAPTER_TOKEN: ${PDD_ADAPTER_TOKEN:-}
-  VALUSee_COMMERCE_PROVIDERS: ${VALUSee_COMMERCE_PROVIDERS:-[]}
+  WORTHPROOF_COMMERCE_PROVIDERS: ${WORTHPROOF_COMMERCE_PROVIDERS:-[]}
 
 services:
   api:
@@ -113,7 +113,7 @@ services:
     security_opt:
       - no-new-privileges:true
     healthcheck:
-      test: ["CMD", "python", "-c", "import os,time,sys; p='/tmp/valuesee-worker-heartbeat'; sys.exit(0 if os.path.exists(p) and time.time()-os.path.getmtime(p)<180 else 1)"]
+      test: ["CMD", "python", "-c", "import os,time,sys; p='/tmp/worthproof-worker-heartbeat'; sys.exit(0 if os.path.exists(p) and time.time()-os.path.getmtime(p)<180 else 1)"]
       interval: 30s
       timeout: 5s
       start_period: 90s
@@ -123,13 +123,13 @@ services:
     image: pgvector/pgvector:pg17
     restart: unless-stopped
     environment:
-      POSTGRES_DB: valuesee
-      POSTGRES_USER: valuesee
+      POSTGRES_DB: worthproof
+      POSTGRES_USER: worthproof
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U valuesee -d valuesee"]
+      test: ["CMD-SHELL", "pg_isready -U worthproof -d worthproof"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -150,7 +150,7 @@ services:
     image: rabbitmq:4.1-management-alpine
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: valuesee
+      RABBITMQ_DEFAULT_USER: worthproof
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD}
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
@@ -176,12 +176,12 @@ services:
       retries: 10
 
   object-storage-init:
-    image: valuesee-api
+    image: worthproof-api
     command: ["python", "-c", "from app.core.object_storage import ensure_bucket_exists; ensure_bucket_exists()"]
     restart: "no"
     environment:
       S3_ENDPOINT_URL: http://minio:9000
-      S3_BUCKET: valuesee-uploads
+      S3_BUCKET: worthproof-uploads
       S3_ACCESS_KEY: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
       S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
     depends_on:

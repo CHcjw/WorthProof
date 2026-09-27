@@ -14,7 +14,7 @@ from app.harness.events import utc_now_iso
 class CommerceCatalog:
     """Admin-owned canonical product/SKU records used to stabilize matching."""
 
-    def __init__(self, db_path: str | Path = "data/valuesee.db"):
+    def __init__(self, db_path: str | Path = "data/worthproof.db"):
         self.db_path = resolve_runtime_path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         with self._session() as conn:

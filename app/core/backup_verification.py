@@ -51,7 +51,7 @@ def _verify_tar(path: Path) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Verify a ValuSee production backup without restoring it.")
+    parser = argparse.ArgumentParser(description="Verify a WorthProof production backup without restoring it.")
     parser.add_argument("backup_directory", type=Path)
     args = parser.parse_args()
     print(json.dumps(verify_backup(args.backup_directory), separators=(",", ":")))

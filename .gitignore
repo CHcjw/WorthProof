@@ -6,7 +6,7 @@
 .python/
 .cache/
 dev_agent_studio.egg-info/
-valuesee.egg-info/
+worthproof.egg-info/
 .test-tmp/
 data/*.db
 data/*.log

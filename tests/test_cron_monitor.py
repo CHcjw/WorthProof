@@ -13,14 +13,14 @@ SECRET = "c" * 48
 
 def _headers(timestamp: str, secret: str = SECRET) -> dict[str, str]:
     return {
-        "X-ValuSee-Timestamp": timestamp,
-        "X-ValuSee-Signature": cron_signature(secret, timestamp, "POST", PATH),
+        "X-WorthProof-Timestamp": timestamp,
+        "X-WorthProof-Signature": cron_signature(secret, timestamp, "POST", PATH),
     }
 
 
 def test_scheduled_monitor_accepts_valid_signature(monkeypatch):
     timestamp = str(int(time.time()))
-    monkeypatch.setenv("VALUSee_CRON_SECRET", SECRET)
+    monkeypatch.setenv("WORTHPROOF_CRON_SECRET", SECRET)
     calls: list[bool] = []
     monkeypatch.setattr(
         "app.api.routes.run_monitor_cycle",
@@ -35,12 +35,12 @@ def test_scheduled_monitor_accepts_valid_signature(monkeypatch):
 
 
 def test_scheduled_monitor_rejects_invalid_or_expired_signature(monkeypatch):
-    monkeypatch.setenv("VALUSee_CRON_SECRET", SECRET)
+    monkeypatch.setenv("WORTHPROOF_CRON_SECRET", SECRET)
     client = TestClient(app)
 
     invalid = client.post(
         PATH,
-        headers={"X-ValuSee-Timestamp": str(int(time.time())), "X-ValuSee-Signature": "0" * 64},
+        headers={"X-WorthProof-Timestamp": str(int(time.time())), "X-WorthProof-Signature": "0" * 64},
     )
     expired_at = str(int(time.time()) - 301)
     expired = client.post(PATH, headers=_headers(expired_at))
@@ -50,7 +50,7 @@ def test_scheduled_monitor_rejects_invalid_or_expired_signature(monkeypatch):
 
 
 def test_scheduled_monitor_requires_server_secret(monkeypatch):
-    monkeypatch.delenv("VALUSee_CRON_SECRET", raising=False)
+    monkeypatch.delenv("WORTHPROOF_CRON_SECRET", raising=False)
 
     response = TestClient(app).post(PATH)
 

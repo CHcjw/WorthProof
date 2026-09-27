@@ -36,7 +36,7 @@ def connect_database(sqlite_path: str | Path) -> ConnectionAdapter:
         connection = psycopg.connect(database_url, row_factory=dict_row)
         return ConnectionAdapter(connection, "postgresql")
 
-    configured_path = os.getenv("VALUSee_SQLITE_PATH", "").strip()
+    configured_path = os.getenv("WORTHPROOF_SQLITE_PATH", "").strip()
     path = Path(configured_path) if configured_path else runtime_root() / sqlite_path
     path.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(path, timeout=30)
@@ -54,7 +54,7 @@ def is_integrity_error(exc: Exception) -> bool:
 
 
 def database_health() -> dict[str, str]:
-    connection = connect_database("data/valuesee.db")
+    connection = connect_database("data/worthproof.db")
     try:
         connection.execute("SELECT 1").fetchone()
         return {"status": "ok", "backend": connection.backend}

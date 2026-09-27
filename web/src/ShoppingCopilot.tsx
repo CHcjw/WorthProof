@@ -84,7 +84,7 @@ const RAG_KNOWLEDGE_BASES: CapabilityItem[] = [
       { label: "规格抽取", description: "沉淀屏幕、芯片、接口、尺寸等关键参数。" },
     ],
     definitions: [
-      { term: "product_ref", meaning: "同一商品在 ValuSee 内部的聚合标识。" },
+      { term: "product_ref", meaning: "同一商品在 WorthProof 内部的聚合标识。" },
       { term: "sku_signature", meaning: "用于判断同款的品牌、型号、规格组合。" },
       { term: "variant_delta", meaning: "候选之间仍需用户确认的版本差异。" },
     ],
@@ -202,7 +202,7 @@ const COPILOT_MCPS: CapabilityItem[] = [
     ],
     definitions: [
       { term: "citation_id", meaning: "后端为本轮真实来源分配的引用编号。" },
-      { term: "fetched_at", meaning: "ValuSee 获取该搜索结果的时间。" },
+      { term: "fetched_at", meaning: "WorthProof 获取该搜索结果的时间。" },
       { term: "source_status", meaning: "搜索服务本轮可用、无结果、未配置或失败状态。" },
     ],
     input: "用户问题、最近对话上下文、当前导购模式",
@@ -302,7 +302,7 @@ const SOURCE_KIND_LABELS: Record<string, string> = {
 const money = (value?: number) => `¥${Number(value || 0).toFixed(0)}`;
 
 function threadStorageKey(owner: string, threadId?: string) {
-  return `valuesee-copilot-thread:${owner || "guest"}${threadId ? `:${threadId}` : ""}`;
+  return `worthproof-copilot-thread:${owner || "guest"}${threadId ? `:${threadId}` : ""}`;
 }
 
 function finalPrice(product: ConsumerProduct) {
@@ -337,7 +337,7 @@ function createWelcomeMessage(): CopilotMessage {
     role: "assistant",
     createdAt: new Date().toISOString(),
     content:
-      "欢迎来到 ValuSee AI 导购。你可以直接说需求，比如“给我找一台适合写代码的 27 寸显示器，预算 2500”。我会把可追溯来源、候选商品、到手价和下一步追问一起整理出来。",
+      "欢迎来到 WorthProof AI 导购。你可以直接说需求，比如“给我找一台适合写代码的 27 寸显示器，预算 2500”。我会把可追溯来源、候选商品、到手价和下一步追问一起整理出来。",
   };
 }
 
@@ -538,7 +538,7 @@ export function ShoppingCopilotPage({
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(`valuesee-copilot-threads:${draftOwner}`);
+      const raw = localStorage.getItem(`worthproof-copilot-threads:${draftOwner}`);
       const saved = raw ? JSON.parse(raw) as CopilotThread[] : [];
       setThreads(Array.isArray(saved) ? saved : []);
     } catch {
@@ -555,7 +555,7 @@ export function ShoppingCopilotPage({
     };
     setThreads((items) => {
       const next = [nextThread, ...items.filter((item) => item.id !== threadId)].slice(0, 20);
-      try { localStorage.setItem(`valuesee-copilot-threads:${draftOwner}`, JSON.stringify(next)); } catch { /* storage is optional */ }
+      try { localStorage.setItem(`worthproof-copilot-threads:${draftOwner}`, JSON.stringify(next)); } catch { /* storage is optional */ }
       return next;
     });
   }, [currentThreadTitle, draftOwner, messages, threadId]);
@@ -610,7 +610,7 @@ export function ShoppingCopilotPage({
     };
     setThreads((items) => {
       const next = [nextThread, ...items.filter((item) => item.id !== targetThreadId)].slice(0, 20);
-      try { localStorage.setItem(`valuesee-copilot-threads:${draftOwner}`, JSON.stringify(next)); } catch { /* storage is optional */ }
+      try { localStorage.setItem(`worthproof-copilot-threads:${draftOwner}`, JSON.stringify(next)); } catch { /* storage is optional */ }
       return next;
     });
   }
@@ -775,7 +775,7 @@ export function ShoppingCopilotPage({
       <aside className="copilot-thread-rail">
         <div className="copilot-rail-brand">
           <img src="/brand/logo-icon.png" alt="" />
-          <div><strong>ValuSee</strong><span>AI 导购</span></div>
+          <div><strong>WorthProof</strong><span>AI 导购</span></div>
         </div>
         <button type="button" className="copilot-new-thread" onClick={startNewConversation}>
           <Plus size={17} />
@@ -806,7 +806,7 @@ export function ShoppingCopilotPage({
         <div>
           <span className="section-kicker">AI 导购工作台</span>
           <h1>{currentThreadTitle}</h1>
-          <p>ValuSee AI 导购会围绕预算、用途、SKU 和来源证据持续追问，帮你把购买决定说清楚。</p>
+          <p>WorthProof AI 导购会围绕预算、用途、SKU 和来源证据持续追问，帮你把购买决定说清楚。</p>
         </div>
         <div className="copilot-top-actions">
           <button type="button" title={railCollapsed ? "展开对话栏" : "收起对话栏"} aria-label={railCollapsed ? "展开对话栏" : "收起对话栏"} onClick={() => setRailCollapsed((value) => !value)}><PanelLeft size={16} /></button>
@@ -819,7 +819,7 @@ export function ShoppingCopilotPage({
           <div className="copilot-stream-head">
             <div>
               <span>当前对话</span>
-              <h2>和 ValuSee 一起做决定</h2>
+              <h2>和 WorthProof 一起做决定</h2>
             </div>
             <div className="copilot-context-actions">
               <button type="button" onClick={onOpenAnalyze} disabled={!candidateCount}><ArrowUpRight size={15} />对比工作台 {candidateCount || ""}</button>
@@ -840,8 +840,8 @@ export function ShoppingCopilotPage({
                 >
                   <div className="copilot-message-topline">
                     <div className="copilot-message-badge">
-                      {message.role === "user" ? <span className="copilot-message-avatar user"><UserRound size={14} /></span> : <img className="copilot-message-avatar" src="/brand/xiaozhi.png" alt="ValuSee" />}
-                      <span>{message.role === "user" ? "我" : "ValuSee"} · {modeLabel(message.mode)}</span>
+                      {message.role === "user" ? <span className="copilot-message-avatar user"><UserRound size={14} /></span> : <img className="copilot-message-avatar" src="/brand/xiaozhi.png" alt="WorthProof" />}
+                      <span>{message.role === "user" ? "我" : "WorthProof"} · {modeLabel(message.mode)}</span>
                     </div>
                     {canCollapse && (
                       <button
@@ -1162,7 +1162,7 @@ export function ShoppingCopilotPage({
                 {activePanel === "capabilities" && selectedCapabilityItem && (
                   <button type="button" className="copilot-modal-back" title="返回能力列表" aria-label="返回能力列表" onClick={() => { setSelectedCapability(null); setPanelSearch(""); }}><ArrowLeft size={17} /></button>
                 )}
-                <div><span>ValuSee AI 工作台</span><h2>{selectedCapabilityItem?.name || (activePanel === "search" ? "搜索对话与能力" : activePanel === "mode" ? "选择导购模式" : activePanel === "capabilities" ? "AI 能力地图" : activePanel === "sources" ? "本轮来源" : activePanel === "followups" ? "继续追问" : "候选证据")}</h2></div>
+                <div><span>WorthProof AI 工作台</span><h2>{selectedCapabilityItem?.name || (activePanel === "search" ? "搜索对话与能力" : activePanel === "mode" ? "选择导购模式" : activePanel === "capabilities" ? "AI 能力地图" : activePanel === "sources" ? "本轮来源" : activePanel === "followups" ? "继续追问" : "候选证据")}</h2></div>
               </div>
               <button type="button" title="关闭" onClick={closePanel}><X size={18} /></button>
             </header>

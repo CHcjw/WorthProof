@@ -19,7 +19,7 @@ from app.shopping.monitor_collector import collect_public_monitor_updates
 from app.shopping.store import shopping_store
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
-logger = logging.getLogger("valuesee.shopping.worker")
+logger = logging.getLogger("worthproof.shopping.worker")
 running = True
 stop_event = threading.Event()
 
@@ -55,7 +55,7 @@ def consume_events(handler: Callable[[dict[str, Any]], None], limit: int = 100) 
     declare_monitor_queues(channel)
     channel.basic_qos(prefetch_count=min(max(1, limit), 100))
     counts = {"consumed": 0, "retried": 0, "dead_lettered": 0}
-    max_retries = max(0, int(os.getenv("VALUSee_QUEUE_MAX_RETRIES", "5")))
+    max_retries = max(0, int(os.getenv("WORTHPROOF_QUEUE_MAX_RETRIES", "5")))
     try:
         for _ in range(max(1, limit)):
             method, properties, body = channel.basic_get(queue=MONITOR_QUEUE, auto_ack=False)
@@ -77,9 +77,9 @@ def consume_events(handler: Callable[[dict[str, Any]], None], limit: int = 100) 
                 counts["dead_lettered"] += 1
             except Exception:
                 headers = dict(getattr(properties, "headers", None) or {})
-                attempts = int(headers.get("x-valuesee-retries", 0)) + 1
+                attempts = int(headers.get("x-worthproof-retries", 0)) + 1
                 route = MONITOR_RETRY_QUEUE if attempts <= max_retries else MONITOR_DEAD_QUEUE
-                headers["x-valuesee-retries"] = attempts
+                headers["x-worthproof-retries"] = attempts
                 channel.basic_publish(
                     exchange="",
                     routing_key=route,
@@ -105,7 +105,7 @@ def handle_price_event(_: dict[str, Any]) -> None:
 
 
 def write_heartbeat() -> None:
-    path = Path(os.getenv("VALUSee_WORKER_HEARTBEAT_PATH", "/tmp/valuesee-worker-heartbeat"))
+    path = Path(os.getenv("WORTHPROOF_WORKER_HEARTBEAT_PATH", "/tmp/worthproof-worker-heartbeat"))
     path.parent.mkdir(parents=True, exist_ok=True)
     path.touch()
 
@@ -113,8 +113,8 @@ def write_heartbeat() -> None:
 def main() -> None:
     signal.signal(signal.SIGINT, _stop)
     signal.signal(signal.SIGTERM, _stop)
-    interval = max(10, int(os.getenv("VALUSee_MONITOR_INTERVAL_SECONDS", "60")))
-    logger.info("ValuSee monitor worker started interval=%ss", interval)
+    interval = max(10, int(os.getenv("WORTHPROOF_MONITOR_INTERVAL_SECONDS", "60")))
+    logger.info("WorthProof monitor worker started interval=%ss", interval)
     while running:
         try:
             queue_result = consume_events(handle_price_event)

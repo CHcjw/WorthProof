@@ -22,7 +22,7 @@ from app.shopping.notifications import deliver_notification
 
 
 class ShoppingStore:
-    def __init__(self, db_path: str | Path = "data/valuesee.db"):
+    def __init__(self, db_path: str | Path = "data/worthproof.db"):
         self.db_path = resolve_runtime_path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_schema()
@@ -1572,7 +1572,7 @@ class ShoppingStore:
         if not isinstance(payload, dict) or not payload:
             raise ValueError("share payload is required")
         now = datetime.now(timezone.utc)
-        record = {"share_id": f"share_{uuid4().hex}", "share_token": uuid4().hex, "user_id": user_id, "share_type": share_type, "title": title.strip()[:120] or "ValuSee 分享", "payload": _public_share_payload(payload), "status": "active", "created_at": now.isoformat(), "expires_at": (now + timedelta(days=max(1, min(expires_days, 365)))).isoformat(), "revoked_at": None}
+        record = {"share_id": f"share_{uuid4().hex}", "share_token": uuid4().hex, "user_id": user_id, "share_type": share_type, "title": title.strip()[:120] or "WorthProof 分享", "payload": _public_share_payload(payload), "status": "active", "created_at": now.isoformat(), "expires_at": (now + timedelta(days=max(1, min(expires_days, 365)))).isoformat(), "revoked_at": None}
         with self._session() as conn:
             conn.execute("INSERT INTO shopping_share(share_id,share_token,user_id,share_type,title,payload_json,status,created_at,expires_at,revoked_at) VALUES(?,?,?,?,?,?,?,?,?,?)", (record["share_id"], record["share_token"], user_id, share_type, record["title"], json.dumps(record["payload"], ensure_ascii=False), record["status"], record["created_at"], record["expires_at"], None))
         return record

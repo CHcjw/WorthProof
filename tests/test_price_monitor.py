@@ -26,7 +26,7 @@ def _product(price: float = 129.0) -> dict[str, object]:
 
 def test_create_monitor_persists_target_price_task():
     with TemporaryDirectory() as tmp:
-        store = ShoppingStore(Path(tmp) / "valuesee-test.db")
+        store = ShoppingStore(Path(tmp) / "worthproof-test.db")
         record = store.create_monitor(
             user_id="u1",
             product=_product(),
@@ -45,7 +45,7 @@ def test_create_monitor_persists_target_price_task():
 
 def test_price_check_updates_monitor_when_target_reached():
     with TemporaryDirectory() as tmp:
-        store = ShoppingStore(Path(tmp) / "valuesee-test.db")
+        store = ShoppingStore(Path(tmp) / "worthproof-test.db")
         record = store.create_monitor(
             user_id="u1",
             product=_product(),
@@ -74,7 +74,7 @@ def test_price_check_updates_monitor_when_target_reached():
 
 def test_monitor_admin_actions_are_stateful_and_audited():
     with TemporaryDirectory() as tmp:
-        store = ShoppingStore(Path(tmp) / "valuesee-test.db")
+        store = ShoppingStore(Path(tmp) / "worthproof-test.db")
         record = store.create_monitor(
             user_id="u1", product=_product(), target_price=99,
             current_final_price=129, monitor_days=30, notify_channel="in_app",
@@ -89,7 +89,7 @@ def test_monitor_admin_actions_are_stateful_and_audited():
 
 def test_monitor_invalid_transition_is_rejected():
     with TemporaryDirectory() as tmp:
-        store = ShoppingStore(Path(tmp) / "valuesee-test.db")
+        store = ShoppingStore(Path(tmp) / "worthproof-test.db")
         record = store.create_monitor(
             user_id="u1", product=_product(), target_price=99,
             current_final_price=129, monitor_days=30, notify_channel="in_app",

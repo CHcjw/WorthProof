@@ -30,7 +30,7 @@ class ProviderLike(Protocol):
 
 @dataclass(frozen=True)
 class CommerceProvider:
-    """ValuSee-compatible external adapter kept for JD, Taobao, and custom sources."""
+    """WorthProof-compatible external adapter kept for JD, Taobao, and custom sources."""
 
     name: str
     base_url: str
@@ -184,7 +184,7 @@ class PinduoduoProvider:
             headers={
                 "Accept": "application/json",
                 "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
-                "User-Agent": "ValuSee/0.1 (+https://valusee.com)",
+                "User-Agent": "WorthProof/0.1 (+https://worthproof.com)",
             },
         )
         try:
@@ -426,13 +426,13 @@ def configured_providers() -> dict[str, ProviderLike]:
             pdd_custom_parameters,
         )
 
-    raw = os.getenv("VALUSee_COMMERCE_PROVIDERS", "[]")
+    raw = os.getenv("WORTHPROOF_COMMERCE_PROVIDERS", "[]")
     try:
         configs = json.loads(raw)
     except json.JSONDecodeError as exc:
-        raise RuntimeError("VALUSee_COMMERCE_PROVIDERS 必须是 JSON 数组") from exc
+        raise RuntimeError("WORTHPROOF_COMMERCE_PROVIDERS 必须是 JSON 数组") from exc
     if not isinstance(configs, list):
-        raise TypeError("VALUSee_COMMERCE_PROVIDERS 必须是 JSON 数组")
+        raise TypeError("WORTHPROOF_COMMERCE_PROVIDERS 必须是 JSON 数组")
     for item in configs:
         if not isinstance(item, dict) or not item.get("name") or not item.get("base_url") or not item.get("token"):
             continue

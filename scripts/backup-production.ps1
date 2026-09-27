@@ -11,12 +11,12 @@ New-Item -ItemType Directory -Force -Path $destination | Out-Null
 & docker compose -f $ComposeFile ps --status running | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "Production compose stack is not available" }
 
-& docker compose -f $ComposeFile exec -T postgres pg_dump -U valuesee -d valuesee --clean --if-exists --no-owner | Set-Content -LiteralPath (Join-Path $destination "postgres.sql") -Encoding utf8
+& docker compose -f $ComposeFile exec -T postgres pg_dump -U worthproof -d worthproof --clean --if-exists --no-owner | Set-Content -LiteralPath (Join-Path $destination "postgres.sql") -Encoding utf8
 if ($LASTEXITCODE -ne 0) { throw "PostgreSQL backup failed" }
 
-& docker run --rm -v "valuesee_minio-data:/source:ro" -v "${destination}:/backup" alpine:3.22 tar czf /backup/minio-data.tgz -C /source .
+& docker run --rm -v "worthproof_minio-data:/source:ro" -v "${destination}:/backup" alpine:3.22 tar czf /backup/minio-data.tgz -C /source .
 if ($LASTEXITCODE -ne 0) { throw "MinIO backup failed" }
-& docker run --rm -v "valuesee_attachment-cache:/source:ro" -v "${destination}:/backup" alpine:3.22 tar czf /backup/attachments.tgz -C /source .
+& docker run --rm -v "worthproof_attachment-cache:/source:ro" -v "${destination}:/backup" alpine:3.22 tar czf /backup/attachments.tgz -C /source .
 if ($LASTEXITCODE -ne 0) { throw "Attachment backup failed" }
 
 $files = Get-ChildItem -LiteralPath $destination -File | ForEach-Object {

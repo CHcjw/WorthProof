@@ -13,9 +13,9 @@ export function BrandMark({ compact = false }: { compact?: boolean }) {
 
 export function BrandWordmark() {
   return (
-    <div className="brand-wordmark" aria-label="ValuSee 见值">
+    <div className="brand-wordmark" aria-label="WorthProof 见值">
       <BrandMark compact />
-      <div><strong>ValuSee</strong><span>见值</span></div>
+      <div><strong>WorthProof</strong><span>见值</span></div>
     </div>
   );
 }

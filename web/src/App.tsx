@@ -301,7 +301,7 @@ function hasRecognizedProduct(product: Product): boolean {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
-  const token = localStorage.getItem("valuesee-token");
+  const token = localStorage.getItem("worthproof-token");
   if (token) headers.set("Authorization", `Bearer ${token}`);
   const response = await fetch(apiUrl(path), { ...init, headers });
   if (!response.ok) {
@@ -323,11 +323,11 @@ const riskLabel: Record<string, string> = {
   medium: "中风险",
   high: "高风险",
 };
-const analyticsSession = sessionStorage.getItem("valuesee-analytics-session") || crypto.randomUUID();
-sessionStorage.setItem("valuesee-analytics-session", analyticsSession);
+const analyticsSession = sessionStorage.getItem("worthproof-analytics-session") || crypto.randomUUID();
+sessionStorage.setItem("worthproof-analytics-session", analyticsSession);
 
 function currentDraftOwner() {
-  const token = localStorage.getItem("valuesee-token");
+  const token = localStorage.getItem("worthproof-token");
   if (!token) return "guest";
   try {
     const payload = token.split(".")[1];
@@ -339,7 +339,7 @@ function currentDraftOwner() {
 }
 
 function draftStorageKey(owner: string) {
-  return `valuesee-shopping-draft:${owner}`;
+  return `worthproof-shopping-draft:${owner}`;
 }
 
 function readShoppingDraft(owner: string): ShoppingDraft | null {
@@ -482,20 +482,20 @@ export function App() {
   const [accountNotice, setAccountNotice] = useState("");
   const [accountNoticeError, setAccountNoticeError] = useState(false);
   const [registrationCodeCooldown, setRegistrationCodeCooldown] = useState(0);
-  const [accountName, setAccountName] = useState(localStorage.getItem("valuesee-account-name") || "本地账户");
+  const [accountName, setAccountName] = useState(localStorage.getItem("worthproof-account-name") || "本地账户");
   const [navigationVariant, setNavigationVariant] = useState("control");
   const [navigationWidth, setNavigationWidth] = useState(() => {
-    const stored = localStorage.getItem("valuesee-navigation-width");
+    const stored = localStorage.getItem("worthproof-navigation-width");
     const saved = stored === null ? Number.NaN : Number(stored);
     return Number.isFinite(saved) ? Math.min(340, Math.max(188, saved)) : 236;
   });
-  const [navigationCollapsed, setNavigationCollapsed] = useState(() => localStorage.getItem("valuesee-navigation-collapsed") === "true");
+  const [navigationCollapsed, setNavigationCollapsed] = useState(() => localStorage.getItem("worthproof-navigation-collapsed") === "true");
   const navigationDrag = useRef<{ startX: number; startWidth: number } | null>(null);
   const navigationDidDrag = useRef(false);
 
   useEffect(() => {
-    localStorage.setItem("valuesee-navigation-width", String(navigationWidth));
-    localStorage.setItem("valuesee-navigation-collapsed", String(navigationCollapsed));
+    localStorage.setItem("worthproof-navigation-width", String(navigationWidth));
+    localStorage.setItem("worthproof-navigation-collapsed", String(navigationCollapsed));
   }, [navigationCollapsed, navigationWidth]);
 
   useEffect(() => {
@@ -639,12 +639,12 @@ export function App() {
     return () => window.removeEventListener("popstate", syncRoute);
   }, []);
   useEffect(() => {
-    const saved = localStorage.getItem("valuesee-last-report");
+    const saved = localStorage.getItem("worthproof-last-report");
     if (saved) {
       try {
         setResult(JSON.parse(saved) as Decision);
       } catch {
-        localStorage.removeItem("valuesee-last-report");
+        localStorage.removeItem("worthproof-last-report");
       }
     }
   }, []);
@@ -681,7 +681,7 @@ export function App() {
 
   async function runDecision(event?: FormEvent) {
     event?.preventDefault();
-    if (!localStorage.getItem("valuesee-token")) {
+    if (!localStorage.getItem("worthproof-token")) {
       setError("请先登录并配置你自己的 LLM API Key，再使用智能对比。");
       openAccount();
       return;
@@ -711,7 +711,7 @@ export function App() {
       }
       setResult(data);
       setMessage("分析完成，报告已保存到账户。");
-      localStorage.setItem("valuesee-last-report", JSON.stringify(data));
+      localStorage.setItem("worthproof-last-report", JSON.stringify(data));
       await refreshRecords();
     } catch (err) {
       setError(err instanceof Error ? err.message : "分析失败");
@@ -852,7 +852,7 @@ export function App() {
     await refreshRecords();
   }
   async function searchCommerceProducts(query: string) {
-    if (!localStorage.getItem("valuesee-token")) {
+    if (!localStorage.getItem("worthproof-token")) {
       openAccount();
       throw new Error("请先登录，再搜索授权平台商品。");
     }
@@ -868,7 +868,7 @@ export function App() {
     history: Array<{ role: "user" | "assistant"; content: string }>,
     signal?: AbortSignal,
   ) {
-    if (!localStorage.getItem("valuesee-token")) {
+    if (!localStorage.getItem("worthproof-token")) {
       openAccount();
       throw new Error("请先登录，再使用 AI 导购联网搜索。");
     }
@@ -1036,7 +1036,7 @@ export function App() {
           price_protection_days: 7,
           return_days: product.return_days,
           warranty_months: product.warranty_months,
-          notes: "由 ValuSee 记录，提醒仅供参考。",
+          notes: "由 WorthProof 记录，提醒仅供参考。",
         }),
       });
       setMessage("购买记录已保存，保价和退货提醒已建立。");
@@ -1249,8 +1249,8 @@ export function App() {
           display_name: displayName,
         }),
       });
-      localStorage.setItem("valuesee-token", data.access_token);
-      localStorage.setItem("valuesee-account-name", data.user.display_name);
+      localStorage.setItem("worthproof-token", data.access_token);
+      localStorage.setItem("worthproof-account-name", data.user.display_name);
       const nextDraftOwner = currentDraftOwner();
       if (!readShoppingDraft(nextDraftOwner) && (products.length || goal.trim())) {
         const migratedDraft: ShoppingDraft = { version: 1, goal, budget, products, updated_at: new Date().toISOString() };
@@ -1309,7 +1309,7 @@ export function App() {
     setVerificationCode("");
   }
   function openAccount() {
-    if (!localStorage.getItem("valuesee-token")) {
+    if (!localStorage.getItem("worthproof-token")) {
       const current = `${window.location.pathname}${window.location.search}` || "/";
       window.location.href = `/login?redirect=${encodeURIComponent(current)}`;
       return;
@@ -1333,8 +1333,8 @@ export function App() {
     setVerificationCode("");
   }
   function logout() {
-    localStorage.removeItem("valuesee-token");
-    localStorage.removeItem("valuesee-account-name");
+    localStorage.removeItem("worthproof-token");
+    localStorage.removeItem("worthproof-account-name");
     setDraftOwner("guest");
     setAccountName("本地账户");
     setAccountOpen(false);
@@ -1387,7 +1387,7 @@ export function App() {
     ["account", "我的", UserRound],
   ];
   return (
-    <main className={`valuesee-app experiment-${navigationVariant}${navigationCollapsed ? " is-navigation-collapsed" : ""}`} style={{ "--app-nav-width": `${navigationCollapsed ? 0 : navigationWidth}px` } as CSSProperties} id="main-content">
+    <main className={`worthproof-app experiment-${navigationVariant}${navigationCollapsed ? " is-navigation-collapsed" : ""}`} style={{ "--app-nav-width": `${navigationCollapsed ? 0 : navigationWidth}px` } as CSSProperties} id="main-content">
       <a className="skip-link" href="#primary-view">
         跳到主要内容
       </a>
@@ -1395,7 +1395,7 @@ export function App() {
         <div className="brand-lockup">
           <BrandMark />
           <div>
-            <strong>ValuSee</strong>
+            <strong>WorthProof</strong>
             <span>买之前，先看清价值</span>
           </div>
         </div>
@@ -1461,7 +1461,7 @@ export function App() {
         <ShoppingCopilotPage
           draftOwner={draftOwner}
           candidateCount={products.length}
-          signedIn={Boolean(localStorage.getItem("valuesee-token"))}
+          signedIn={Boolean(localStorage.getItem("worthproof-token"))}
           onChat={chatWithShoppingCopilot}
           onAddCandidate={(product) => {
             void addProduct(product);
@@ -1478,7 +1478,7 @@ export function App() {
         <AccountProfilePanel
           onName={(name) => {
             setAccountName(name);
-            localStorage.setItem("valuesee-account-name", name);
+            localStorage.setItem("worthproof-account-name", name);
           }}
         />
       )}
@@ -1655,7 +1655,7 @@ export function App() {
                   <MessageSquareWarning size={20} />
                   <div>
                     <strong>{linkRecovery.product.platform || "电商平台"}公开页面没有返回可确认的商品信息</strong>
-                    <p>该页面可能要求登录、验证码或由浏览器动态加载。ValuSee 没有把空数据当成识别结果。</p>
+                    <p>该页面可能要求登录、验证码或由浏览器动态加载。WorthProof 没有把空数据当成识别结果。</p>
                     <span>{linkRecovery.submittedUrl}</span>
                     <div className="link-recovery-actions">
                       <a href={apiUrl("/api/v1/downloads/browser-extension")}><Download size={15} />安装扩展采集</a>
@@ -1935,7 +1935,7 @@ function ComparisonWorkbench({ products, onChange, onShare }: { products: Produc
     context.fillRect(0, 0, width, height);
     context.fillStyle = "#243832";
     context.font = "700 38px system-ui";
-    context.fillText("ValuSee 商品对比", 64, 62);
+    context.fillText("WorthProof 商品对比", 64, 62);
     context.fillStyle = "#71817a";
     context.font = "20px system-ui";
     context.fillText(`生成于 ${new Date().toLocaleString("zh-CN")} · 价格与优惠请在下单前回到来源核验`, 64, 100);
@@ -1952,7 +1952,7 @@ function ComparisonWorkbench({ products, onChange, onShare }: { products: Produc
       context.fillText(product.platform || "来源待确认", 1190, y);
     });
     const anchor = document.createElement("a");
-    anchor.download = `ValuSee-compare-${Date.now()}.png`;
+    anchor.download = `WorthProof-compare-${Date.now()}.png`;
     anchor.href = canvas.toDataURL("image/png");
     anchor.click();
   }
@@ -2543,7 +2543,7 @@ function AccountProfilePanel({ onName }: { onName: (name: string) => void }) {
     if (next.avatar_url) {
       const response = await fetch(next.avatar_url, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("valuesee-token") || ""}`,
+          Authorization: `Bearer ${localStorage.getItem("worthproof-token") || ""}`,
         },
       });
       if (response.ok) {
@@ -2680,7 +2680,7 @@ function FamilyPanel() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [notice, setNotice] = useState("");
   async function load() {
-    if (!localStorage.getItem("valuesee-token")) return;
+    if (!localStorage.getItem("worthproof-token")) return;
     const rows = await request<Array<Record<string, unknown>>>("/api/v1/families");
     setFamilies(rows);
     const id = selected || String(rows[0]?.family_id || "");
@@ -2723,7 +2723,7 @@ function FamilyPanel() {
     await request(`/api/v1/families/${encodeURIComponent(selected)}/members/${encodeURIComponent(userId)}`, { method: "DELETE" });
     await load();
   }
-  if (!localStorage.getItem("valuesee-token"))
+  if (!localStorage.getItem("worthproof-token"))
     return (
       <section className="page-section">
         <PageTitle icon={<Users size={22} />} title="我的家庭" subtitle="登录后可与家庭成员共享设备档案和购买提醒。" />
@@ -2860,7 +2860,7 @@ function FamilyWorkspacePanel() {
     setBudget(nextBudget);
   }
   async function load() {
-    if (!localStorage.getItem("valuesee-token")) return;
+    if (!localStorage.getItem("worthproof-token")) return;
     const [rows, pending] = await Promise.all([request<Family[]>("/api/v1/families"), request<Invitation[]>("/api/v1/families/invitations/pending")]);
     setFamilies(rows);
     setInvitations(pending);
@@ -2934,7 +2934,7 @@ function FamilyWorkspacePanel() {
     setNotice("共享预算已更新。");
     await loadFamily(selected);
   }
-  if (!localStorage.getItem("valuesee-token"))
+  if (!localStorage.getItem("worthproof-token"))
     return (
       <section className="page-section">
         <PageTitle icon={<Users size={22} />} title="我的家庭" subtitle="登录后可与家庭成员共享设备档案和购买提醒。" />
@@ -3147,7 +3147,7 @@ function SecurityPanel({ onLoggedOut }: { onLoggedOut: () => void }) {
     setSessions(active);
   };
   useEffect(() => {
-    if (localStorage.getItem("valuesee-token")) void load().catch(() => setNotice("安全信息读取失败，请重新登录。"));
+    if (localStorage.getItem("worthproof-token")) void load().catch(() => setNotice("安全信息读取失败，请重新登录。"));
   }, []);
   async function revoke(item: AccountSession) {
     await request(`/api/v1/auth/sessions/${encodeURIComponent(item.session_id)}`, { method: "DELETE" });
@@ -3171,7 +3171,7 @@ function SecurityPanel({ onLoggedOut }: { onLoggedOut: () => void }) {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `valuesee-account-${new Date().toISOString().slice(0, 10)}.json`;
+    anchor.download = `worthproof-account-${new Date().toISOString().slice(0, 10)}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
     setNotice("账户数据已导出。");
@@ -3183,7 +3183,7 @@ function SecurityPanel({ onLoggedOut }: { onLoggedOut: () => void }) {
     onLoggedOut();
     setNotice("账户和关联数据已删除。");
   }
-  if (!localStorage.getItem("valuesee-token"))
+  if (!localStorage.getItem("worthproof-token"))
     return (
       <section className="page-section">
         <PageTitle icon={<ShieldCheck size={22} />} title="账户与数据安全" subtitle="登录后管理设备、邮箱和个人数据。" />
@@ -3366,7 +3366,7 @@ function PurchaseCenter({ purchases, products, purchaseProduct, paidPrice, onPur
   }
   async function downloadAttachment(path: string, name: string) {
     const headers = new Headers();
-    const token = localStorage.getItem("valuesee-token");
+    const token = localStorage.getItem("worthproof-token");
     if (token) headers.set("Authorization", `Bearer ${token}`);
     const response = await fetch(apiUrl(path), { headers });
     if (!response.ok) throw new Error("附件下载失败");
@@ -3409,14 +3409,14 @@ function PurchaseCenter({ purchases, products, purchaseProduct, paidPrice, onPur
   }
   async function downloadCalendar() {
     const headers = new Headers();
-    const token = localStorage.getItem("valuesee-token");
+    const token = localStorage.getItem("worthproof-token");
     if (token) headers.set("Authorization", `Bearer ${token}`);
     const response = await fetch("/api/v1/shopping/purchases/calendar.ics", { headers });
     if (!response.ok) throw new Error("日历导出失败");
     const url = URL.createObjectURL(await response.blob());
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "valuesee-shopping.ics";
+    anchor.download = "worthproof-shopping.ics";
     anchor.click();
     URL.revokeObjectURL(url);
   }
@@ -3592,7 +3592,7 @@ function PurchaseCenter({ purchases, products, purchaseProduct, paidPrice, onPur
           <div className="ticket-messages">
             {openTicket.messages?.map((message) => (
               <article className={message.actor_role} key={message.message_id}>
-                <b>{message.actor_role === "admin" ? "ValuSee 客服" : "我"}</b>
+                <b>{message.actor_role === "admin" ? "WorthProof 客服" : "我"}</b>
                 <p>{message.content}</p>
                 <small>{date(message.created_at)}</small>
               </article>
@@ -3609,7 +3609,7 @@ function PurchaseCenter({ purchases, products, purchaseProduct, paidPrice, onPur
   );
 }
 function AccountDialog({ mode, email, password, confirmPassword, verificationCode, displayName, busy, notice, noticeError, codeCooldown, onEmail, onPassword, onConfirmPassword, onVerificationCode, onDisplayName, onMode, onRequestCode, onSubmit, onClose, onLogout }: { mode: "login" | "register" | "forgot" | "reset"; email: string; password: string; confirmPassword: string; verificationCode: string; displayName: string; busy: boolean; notice: string; noticeError: boolean; codeCooldown: number; onEmail: (value: string) => void; onPassword: (value: string) => void; onConfirmPassword: (value: string) => void; onVerificationCode: (value: string) => void; onDisplayName: (value: string) => void; onMode: (mode: "login" | "register" | "forgot" | "reset") => void; onRequestCode: () => void; onSubmit: (event: FormEvent) => void; onClose: () => void; onLogout: () => void }) {
-  const title = mode === "login" ? "登录 ValuSee" : mode === "register" ? "创建账户" : mode === "forgot" ? "找回密码" : "设置新密码";
+  const title = mode === "login" ? "登录 WorthProof" : mode === "register" ? "创建账户" : mode === "forgot" ? "找回密码" : "设置新密码";
   const submitLabel = mode === "login" ? "登录" : mode === "register" ? "注册" : mode === "forgot" ? "发送重置邮件" : "更新密码";
   const confirmsPassword = mode === "register" || mode === "reset";
   const passwordMismatch = confirmsPassword && confirmPassword.length > 0 && password !== confirmPassword;
@@ -3672,7 +3672,7 @@ function AccountDialog({ mode, email, password, confirmPassword, verificationCod
             返回登录
           </button>
         )}
-        {localStorage.getItem("valuesee-token") && (
+        {localStorage.getItem("worthproof-token") && (
           <button className="account-switch danger" onClick={onLogout}>
             退出登录
           </button>
@@ -3686,7 +3686,7 @@ function CapturePathPanel({ onFocusLink, onUploadScreenshot }: { onFocusLink: ()
     <section className="product-search-panel">
       <div className="product-search-copy">
         <span className="section-kicker">真实数据入口</span>
-        <h2>把你正在纠结的商品交给 ValuSee</h2>
+        <h2>把你正在纠结的商品交给 WorthProof</h2>
         <p>初期不搜索或伪造全平台商品。链接公开信息不完整时，使用扩展读取你当前看到的 SKU、地区价和会员优惠，或上传截图识别。</p>
       </div>
       <div className="capture-path-grid">

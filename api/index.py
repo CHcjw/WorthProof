@@ -1,4 +1,4 @@
-"""Vercel ASGI entrypoint for the ValuSee API project.
+"""Vercel ASGI entrypoint for the WorthProof API project.
 
 The consumer Web is deployed as a separate Vite project. Stateful production
 dependencies remain external; Vercel's ephemeral filesystem is preview-only.

@@ -19,7 +19,7 @@ def test_email_code_is_hashed_single_use_and_rate_limited(tmp_path: Path) -> Non
 
     with store._session() as connection:
         row = connection.execute(
-            "SELECT code_hash FROM valuesee_email_code WHERE email=? AND purpose=?",
+            "SELECT code_hash FROM worthproof_email_code WHERE email=? AND purpose=?",
             ("buyer@example.com", "register"),
         ).fetchone()
     assert row and row["code_hash"] != code
@@ -102,7 +102,7 @@ def test_registration_code_is_removed_when_email_delivery_fails(monkeypatch, tmp
 
     assert response.status_code == 503
     with store._session() as connection:
-        assert connection.execute("SELECT 1 FROM valuesee_email_code").fetchone() is None
+        assert connection.execute("SELECT 1 FROM worthproof_email_code").fetchone() is None
 
 
 def test_registration_code_can_use_local_delivery_fallback(monkeypatch, tmp_path: Path) -> None:

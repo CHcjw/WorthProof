@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><link rel="stylesheet" href="popup.css" /><title>ValuSee</title></head>
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><link rel="stylesheet" href="popup.css" /><title>WorthProof</title></head>
   <body>
-    <header><img src="icons/icon128.png" alt="" /><div><strong>ValuSee 见值</strong><span id="connection">正在检查连接</span></div><button id="settings" title="连接设置">设置</button></header>
+    <header><img src="icons/icon128.png" alt="" /><div><strong>WorthProof 见值</strong><span id="connection">正在检查连接</span></div><button id="settings" title="连接设置">设置</button></header>
     <main>
       <section id="settingsPanel" hidden>
-        <label>ValuSee 地址<input id="appUrl" type="url" placeholder="https://valusee.com" /></label>
+        <label>WorthProof 地址<input id="appUrl" type="url" placeholder="https://worthproof.com" /></label>
         <label>登录邮箱<input id="email" type="email" autocomplete="username" /></label>
         <label>登录密码<input id="password" type="password" autocomplete="current-password" /></label>
         <label>动态验证码（管理员开启 MFA 后必填）<input id="mfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="32" /></label>
@@ -23,7 +23,7 @@
       </section>
       <div id="preview">正在读取当前商品页...</div>
       <button id="retry" class="secondary">重新识别当前页</button>
-      <button id="open" class="secondary">打开 ValuSee</button><p id="status" role="status"></p>
+      <button id="open" class="secondary">打开 WorthProof</button><p id="status" role="status"></p>
     </main>
     <script src="popup.js"></script>
   </body>

@@ -6,11 +6,11 @@ from pathlib import Path
 
 def runtime_root() -> Path:
     """Return a writable root for mutable runtime data."""
-    configured = os.getenv("VALUSee_DATA_DIR", "").strip()
+    configured = os.getenv("WORTHPROOF_DATA_DIR", "").strip()
     if configured:
         return Path(configured).expanduser().resolve()
     if os.getenv("VERCEL", "").strip():
-        return Path("/tmp/valuesee")
+        return Path("/tmp/worthproof")
     return Path.cwd()
 
 

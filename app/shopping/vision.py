@@ -17,7 +17,7 @@ from app.providers.llm_provider import llm_provider
 ALLOWED_IMAGE_TYPES = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 MAX_IMAGE_PIXELS = 40_000_000
-VISION_PROMPT = """你是 ValuSee 商品截图识别器。只提取图片中明确可见的信息，不得猜测或补全。
+VISION_PROMPT = """你是 WorthProof 商品截图识别器。只提取图片中明确可见的信息，不得猜测或补全。
 返回一个 JSON 对象，不要 Markdown，不要解释。字段：
 ocr_text,title,brand,model,sku,platform,category,price,coupon,platform_discount,member_discount,
 subsidy,shipping,store_name,selected_variant,condition,official_store,return_days,warranty_months,

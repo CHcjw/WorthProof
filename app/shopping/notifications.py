@@ -25,14 +25,14 @@ def deliver_notification(
         deliveries.append("email")
     if quiet:
         deliveries.append("quiet_deferred")
-    endpoint = os.getenv("VALUSee_NOTIFICATION_WEBHOOK_URL", "").strip()
+    endpoint = os.getenv("WORTHPROOF_NOTIFICATION_WEBHOOK_URL", "").strip()
     if not endpoint or quiet:
         return "+".join(deliveries) or "audit_only"
     body = json.dumps(notification, ensure_ascii=False).encode("utf-8")
-    secret = os.getenv("VALUSee_NOTIFICATION_WEBHOOK_SECRET", "").encode("utf-8")
+    secret = os.getenv("WORTHPROOF_NOTIFICATION_WEBHOOK_SECRET", "").encode("utf-8")
     signature = hmac.new(secret, body, hashlib.sha256).hexdigest() if secret else ""
     request = Request(endpoint, data=body, method="POST", headers={
-        "Content-Type": "application/json", "X-ValuSee-Signature": signature,
+        "Content-Type": "application/json", "X-WorthProof-Signature": signature,
     })
     try:
         with urlopen(request, timeout=5) as response:
@@ -65,26 +65,26 @@ def _deliver_email(notification: dict[str, object]) -> bool:
         recipient = str((user or {}).get("email") or "").strip()
         if not recipient:
             return False
-        return send_transactional_email(recipient, str(notification.get("title") or "ValuSee 提醒"), str(notification.get("message") or ""))
+        return send_transactional_email(recipient, str(notification.get("title") or "WorthProof 提醒"), str(notification.get("message") or ""))
     except Exception:
         return False
 
 
 def send_transactional_email(recipient: str, subject: str, content: str) -> bool:
-    transport = os.getenv("VALUSee_EMAIL_TRANSPORT", "smtp").strip().lower()
+    transport = os.getenv("WORTHPROOF_EMAIL_TRANSPORT", "smtp").strip().lower()
     app_env = os.getenv("APP_ENV", "dev").lower()
     if transport == "console" and app_env not in {"prod", "production"}:
         return bool(recipient)
-    host = os.getenv("VALUSee_SMTP_HOST", "").strip()
+    host = os.getenv("WORTHPROOF_SMTP_HOST", "").strip()
     if not host and app_env not in {"prod", "production"}:
         return bool(recipient)
     if not host or not recipient:
         return False
     try:
-        port = int(os.getenv("VALUSee_SMTP_PORT", "465"))
-        username = os.getenv("VALUSee_SMTP_USERNAME", "").strip()
-        password = os.getenv("VALUSee_SMTP_PASSWORD", "")
-        sender = os.getenv("VALUSee_SMTP_FROM", username).strip()
+        port = int(os.getenv("WORTHPROOF_SMTP_PORT", "465"))
+        username = os.getenv("WORTHPROOF_SMTP_USERNAME", "").strip()
+        password = os.getenv("WORTHPROOF_SMTP_PASSWORD", "")
+        sender = os.getenv("WORTHPROOF_SMTP_FROM", username).strip()
         if not sender:
             return False
         message = EmailMessage()
@@ -92,7 +92,7 @@ def send_transactional_email(recipient: str, subject: str, content: str) -> bool
         message["From"] = sender
         message["To"] = recipient
         message.set_content(content)
-        use_ssl = os.getenv("VALUSee_SMTP_SSL", "true").lower() not in {"0", "false", "no"}
+        use_ssl = os.getenv("WORTHPROOF_SMTP_SSL", "true").lower() not in {"0", "false", "no"}
         if use_ssl:
             with smtplib.SMTP_SSL(host, port, timeout=8, context=ssl.create_default_context()) as client:
                 if username:

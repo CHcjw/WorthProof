@@ -1,8 +1,8 @@
-# ValuSee Production Release
+# WorthProof Production Release
 
 ## What Is Shipped
 
-ValuSee is a consumer shopping decision product for digital products and small appliances:
+WorthProof is a consumer shopping decision product for digital products and small appliances:
 
 ```text
 need or link or screenshot -> OCR/product normalization -> SKU/spec comparison
@@ -10,7 +10,7 @@ need or link or screenshot -> OCR/product normalization -> SKU/spec comparison
 -> price history/target monitor -> purchase, price-protection, return and warranty reminders
 ```
 
-The Web workbench and Manifest V3 browser extension are included. The extension reads only fields visible on the page the user has opened and sends a pending confirmation record to ValuSee.
+The Web workbench and Manifest V3 browser extension are included. The extension reads only fields visible on the page the user has opened and sends a pending confirmation record to WorthProof.
 The Web client is also installable as a PWA. Its offline shell contains no private API responses; account data, reports, comparisons, and notifications always come from authenticated requests.
 
 ## Production Components
@@ -27,7 +27,7 @@ The Web client is also installable as a PWA. Its offline shell contains no priva
 - `/health` is a liveness probe. `/ready` checks the configured database and infrastructure dependencies.
 - The monitor worker writes a cycle heartbeat. Its container health check fails when the worker remains alive but stops completing queue/scan cycles.
 - `/api/v1/admin/metrics` exposes business outcomes for the latest reporting window: analysis completion, recommendation acceptance, monitor conversion, feedback resolution, estimated savings, and analysis P95 latency.
-- `/metrics` exposes bounded-cardinality Prometheus HTTP counters and duration aggregates. Production requires `X-Metrics-Token` matching `VALUSee_METRICS_TOKEN`; do not expose this endpoint anonymously.
+- `/metrics` exposes bounded-cardinality Prometheus HTTP counters and duration aggregates. Production requires `X-Metrics-Token` matching `WORTHPROOF_METRICS_TOKEN`; do not expose this endpoint anonymously.
 - Every response has a validated/generated `X-Request-ID`; JSON request logs contain route, status and latency but omit query strings, credentials and client IP addresses. Prometheus latency histograms support P95 alerts. Dependency and RabbitMQ ready/retry/dead-letter gauges are included.
 - Load `ops/prometheus-alerts.yml` into Prometheus and route critical alerts to an actual on-call receiver before launch.
 - First-party experiments use deterministic account assignment and an allowlisted analytics payload. Experiment creation and status changes remain administrator-only.
@@ -45,14 +45,14 @@ The Web client is also installable as a PWA. Its offline shell contains no priva
 
 ## Vercel Web Deployment
 
-The `valu-see` Vercel project is connected to `github.com/biheto/ValuSee` with `web/` as its Root Directory. Pushes to `main` create production deployments; pull requests and other branches create isolated previews. Vercel serves only the Vite Web/PWA build. FastAPI, the monitor worker, PostgreSQL, Redis, RabbitMQ and object storage remain on the long-running Docker host.
+The `valu-see` Vercel project is connected to `github.com/biheto/WorthProof` with `web/` as its Root Directory. Pushes to `main` create production deployments; pull requests and other branches create isolated previews. Vercel serves only the Vite Web/PWA build. FastAPI, the monitor worker, PostgreSQL, Redis, RabbitMQ and object storage remain on the long-running Docker host.
 
-An optional `valuesee-api` Vercel project can use `api/index.py` for lightweight preview/API validation. It is not a replacement for the Docker backend: Vercel functions have no durable local filesystem and do not run the monitor worker. Do not place production `DATABASE_URL`, queue, or object-storage state on SQLite or `/tmp`.
+An optional `worthproof-api` Vercel project can use `api/index.py` for lightweight preview/API validation. It is not a replacement for the Docker backend: Vercel functions have no durable local filesystem and do not run the monitor worker. Do not place production `DATABASE_URL`, queue, or object-storage state on SQLite or `/tmp`.
 
-For a Vercel API preview, configure `APP_ENV=preview`, `VALUSee_SQLITE_PATH=/tmp/valuesee.db`, explicit `ALLOWED_HOSTS` and `ALLOWED_ORIGINS`, then deploy from the repository root. Mutable files automatically use `/tmp/valuesee` when `VERCEL=1`; this prevents read-only filesystem failures but does not make those files durable. A production API must set an external PostgreSQL `DATABASE_URL` and S3-compatible storage. Set `S3_BUCKET` to enable S3 mode, plus `S3_REGION` and credentials (or an attached IAM role); use `S3_ENDPOINT_URL` only for non-AWS providers such as MinIO. Keep `S3_BUCKET` unset when intentionally using ephemeral preview storage.
+For a Vercel API preview, configure `APP_ENV=preview`, `WORTHPROOF_SQLITE_PATH=/tmp/worthproof.db`, explicit `ALLOWED_HOSTS` and `ALLOWED_ORIGINS`, then deploy from the repository root. Mutable files automatically use `/tmp/worthproof` when `VERCEL=1`; this prevents read-only filesystem failures but does not make those files durable. A production API must set an external PostgreSQL `DATABASE_URL` and S3-compatible storage. Set `S3_BUCKET` to enable S3 mode, plus `S3_REGION` and credentials (or an attached IAM role); use `S3_ENDPOINT_URL` only for non-AWS providers such as MinIO. Keep `S3_BUCKET` unset when intentionally using ephemeral preview storage.
 
-The Vercel Web project proxies same-origin `/api/*` requests to `valuesee-api`; do not set
-`VITE_API_BASE_URL` in Production or Preview. This keeps browser requests on `valusee.com` and
+The Vercel Web project proxies same-origin `/api/*` requests to `worthproof-api`; do not set
+`VITE_API_BASE_URL` in Production or Preview. This keeps browser requests on `worthproof.com` and
 avoids CORS, DNS and stale PWA endpoint failures. Local development uses the equivalent Vite
 `/api` proxy. Vercel project identifiers and OIDC credentials live under ignored `.vercel/` and
 `.env.local` files and must not be committed.
@@ -61,35 +61,35 @@ avoids CORS, DNS and stale PWA endpoint failures. Local development uses the equ
 
 For the Vercel Web/API plus long-running worker topology:
 
-1. Connect a managed PostgreSQL resource to `valuesee-api` and expose its pooled TLS URL as `DATABASE_URL`. Use the same URL in the worker's private `.env.worker` file.
+1. Connect a managed PostgreSQL resource to `worthproof-api` and expose its pooled TLS URL as `DATABASE_URL`. Use the same URL in the worker's private `.env.worker` file.
 2. Create a private S3-compatible bucket. For Cloudflare R2, set `S3_ENDPOINT_URL=https://<account-id>.r2.cloudflarestorage.com`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, and `S3_REGION=auto` on the API project. Do not make the bucket public; files are downloaded through authenticated API routes.
 3. On the Ubuntu worker host, clone the repository, create `.env.worker` from `.env.worker.example`, and run `sh scripts/deploy-worker.sh`. Only outbound HTTPS/PostgreSQL access is required; the worker publishes no port.
-4. Set the API project to `APP_ENV=production` only after `DATABASE_URL`, object storage, production secrets, `VALUSee_ADMIN_EMAILS`, `ALLOWED_HOSTS`, `ALLOWED_ORIGINS`, and `VALUSee_PUBLIC_BASE_URL` are configured and `/ready` passes.
-5. In Cloudflare DNS use `A api 76.76.21.21` with DNS-only mode during Vercel certificate validation. After Vercel reports the domain valid, the Web build can use `VITE_API_BASE_URL=https://api.valusee.com`.
+4. Set the API project to `APP_ENV=production` only after `DATABASE_URL`, object storage, production secrets, `WORTHPROOF_ADMIN_EMAILS`, `ALLOWED_HOSTS`, `ALLOWED_ORIGINS`, and `WORTHPROOF_PUBLIC_BASE_URL` are configured and `/ready` passes.
+5. In Cloudflare DNS use `A api 76.76.21.21` with DNS-only mode during Vercel certificate validation. After Vercel reports the domain valid, the Web build can use `VITE_API_BASE_URL=https://api.worthproof.com`.
 
 The worker deliberately treats RabbitMQ as optional. Its periodic PostgreSQL scan is the durable recovery mechanism, so a single worker can launch without exposing Redis, RabbitMQ, PostgreSQL, or an administration port on the worker host.
 
 ### Serverless monitor topology
 
 The current free validation deployment does not require an Ubuntu worker host. Cloudflare Cron
-Worker `valuesee-monitor-cron` invokes `POST /api/v1/internal/monitor/run` every ten minutes. The
+Worker `worthproof-monitor-cron` invokes `POST /api/v1/internal/monitor/run` every ten minutes. The
 API validates an HMAC-SHA256 signature and a five-minute timestamp window before executing one
 idempotent monitor cycle against Neon PostgreSQL. Individual realtime, daily and weekly monitor
 frequencies are still enforced by the collector, so the scheduler does not over-fetch products.
 
 Generate one 32-byte-or-longer random secret and store it as sensitive
-`VALUSee_CRON_SECRET` in both the Vercel `valuesee-api` Production environment and Cloudflare
+`WORTHPROOF_CRON_SECRET` in both the Vercel `worthproof-api` Production environment and Cloudflare
 Worker secrets. Never put the value in Git, Worker variables, or frontend environment variables.
 
 ```powershell
 cd cloudflare/monitor-cron
 npm install
 npx wrangler login
-npx wrangler secret put VALUSee_CRON_SECRET
+npx wrangler secret put WORTHPROOF_CRON_SECRET
 npm run deploy
 ```
 
-Use `npx wrangler tail valuesee-monitor-cron` to inspect scheduled executions. A non-2xx API
+Use `npx wrangler tail worthproof-monitor-cron` to inspect scheduled executions. A non-2xx API
 response causes a Worker exception and is visible in Cloudflare logs. The in-app notification
 record remains durable in PostgreSQL even when email or Push providers are not configured.
 
@@ -108,21 +108,21 @@ docker compose --env-file .env.production -f docker-compose.production.yml up -d
 docker compose --env-file .env.production -f docker-compose.production.yml exec -T api python -c "from app.providers.llm_provider import llm_provider; s=llm_provider.status(); print({'enabled':s['enabled'],'model':s['model'],'source':s['source']})"
 ```
 
-The platform adapter boundary is implemented at `app/shopping/providers.py`. Real JD/Taobao/affiliate use requires an approved provider contract and credentials. All credential placeholders and the `VALUSee_COMMERCE_PROVIDERS` JSON registry are consolidated in `.env.production.example`; ValuSee does not claim to provide live platform data without those credentials.
+The platform adapter boundary is implemented at `app/shopping/providers.py`. Real JD/Taobao/affiliate use requires an approved provider contract and credentials. All credential placeholders and the `WORTHPROOF_COMMERCE_PROVIDERS` JSON registry are consolidated in `.env.production.example`; WorthProof does not claim to provide live platform data without those credentials.
 
-Pinduoduo Duoduo Jinbao is supported directly through the official gateway. The current `pdd.ddk.goods.search` policy requires both approved application credentials and an authorized promotion identity. Configure `PDD_CLIENT_ID`, `PDD_CLIENT_SECRET`, `PDD_PID`, and the exact `PDD_CUSTOM_PARAMETERS` value used during authorization filing. The homepage then shows official search results with source timestamps and disclosed promotion links. A missing or mismatched promotion identity returns platform error `60001`; ValuSee disables the provider until all four values exist. Never expose the client secret to the browser or commit it to Git.
+Pinduoduo Duoduo Jinbao is supported directly through the official gateway. The current `pdd.ddk.goods.search` policy requires both approved application credentials and an authorized promotion identity. Configure `PDD_CLIENT_ID`, `PDD_CLIENT_SECRET`, `PDD_PID`, and the exact `PDD_CUSTOM_PARAMETERS` value used during authorization filing. The homepage then shows official search results with source timestamps and disclosed promotion links. A missing or mismatched promotion identity returns platform error `60001`; WorthProof disables the provider until all four values exist. Never expose the client secret to the browser or commit it to Git.
 
-JD and Taobao `App Secret` values are not directly interchangeable with the unified adapter token: each platform still needs a signed adapter that maps its official response into ValuSee's product schema. Pinduoduo now has a built-in signed adapter, but it still remains disabled until its official credentials and permissions are available.
+JD and Taobao `App Secret` values are not directly interchangeable with the unified adapter token: each platform still needs a signed adapter that maps its official response into WorthProof's product schema. Pinduoduo now has a built-in signed adapter, but it still remains disabled until its official credentials and permissions are available.
 
 The user search panel and `/admin` console are usable without changing the consumer workflow. Search results are intentionally empty until an approved provider is configured or a user supplies a product URL/extension capture; this is a data-integrity boundary, not a placeholder catalog.
 
-The optional `VALUSee_NOTIFICATION_WEBHOOK_URL` delivers signed server-to-server notifications. In-app notifications are always the canonical durable record. No automatic checkout, payment, refund, or external customer-service action is enabled.
+The optional `WORTHPROOF_NOTIFICATION_WEBHOOK_URL` delivers signed server-to-server notifications. In-app notifications are always the canonical durable record. No automatic checkout, payment, refund, or external customer-service action is enabled.
 
 ## Security And Data Controls
 
-- Production requires a non-default `VALUSee_JWT_SECRET` and bearer authentication for user data.
+- Production requires a non-default `WORTHPROOF_JWT_SECRET` and bearer authentication for user data.
 - Production startup fails on weak JWT/metrics secrets, wildcard hosts/origins, a non-HTTPS public URL, or a missing administrator allowlist.
-- Administrators can bind TOTP MFA in the account-security tab. Enabling MFA revokes old sessions; subsequent admin logins require a dynamic code or single-use recovery code. TOTP secrets are encrypted with the independently rotatable `VALUSee_MFA_ENCRYPTION_KEY`.
+- Administrators can bind TOTP MFA in the account-security tab. Enabling MFA revokes old sessions; subsequent admin logins require a dynamic code or single-use recovery code. TOTP secrets are encrypted with the independently rotatable `WORTHPROOF_MFA_ENCRYPTION_KEY`.
 - Marketplace preview/install/uninstall is administrator-only. Production rejects local package paths, non-GitHub remote hosts, private network targets, unsafe redirects, oversized downloads and archive path traversal.
 - Passwords use PBKDF2-HMAC-SHA256 with per-user salts.
 - User IDs are derived from the verified token; request-body `user_id` values cannot cross account boundaries.
@@ -153,7 +153,7 @@ The system intentionally does not invent prices, reviews, SKU matches, or discou
 - Automated release quality passed with 110 Python tests, including signed scheduled-monitor authorization and bounded failure-isolated monitor batches, the production Vite build, desktop/mobile Playwright consumer journeys (including link, extension-download, and screenshot acquisition paths), the correctness Ruff gate, production Compose parsing, and PowerShell backup/restore/release script parsing. Dependency audits remain enforced by GitHub Actions; the local npm mirror used for this verification does not implement the npm audit endpoint.
 - The full production Compose stack was deployed locally with healthy API, monitor worker, PostgreSQL/pgvector, Redis, RabbitMQ and MinIO services. Application readiness, private object upload/download, account lifecycle, queue checks, and persistent database recovery after a complete Compose stop/start all passed.
 - The running production image served a validated Manifest V3 extension archive. Public-page monitor observations remain pending until user confirmation; blocked, login-only, or personalized prices trigger an extension recapture reminder instead of entering trusted history.
-- Cloudflare Worker `valuesee-monitor-cron` deployed with a ten-minute schedule. Its first production invocation reached `POST /api/v1/internal/monitor/run` with a valid HMAC signature, returned HTTP 200 in 544 ms, and completed an empty monitor cycle without errors.
+- Cloudflare Worker `worthproof-monitor-cron` deployed with a ten-minute schedule. Its first production invocation reached `POST /api/v1/internal/monitor/run` with a valid HMAC signature, returned HTTP 200 in 544 ms, and completed an empty monitor cycle without errors.
 - The installed environment does not include `pytest`; run the repository suite in CI with `pip install .[dev]`.
 
-See `docs/VALUSee_IMPLEMENTATION_LOG.md` for the feature-by-feature history and commit record.
+See `docs/WorthProof_IMPLEMENTATION_LOG.md` for the feature-by-feature history and commit record.

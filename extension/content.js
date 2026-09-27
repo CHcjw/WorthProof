@@ -1,6 +1,6 @@
 (() => {
-  if (window.__VALUSeeCollectorV6) return;
-  window.__VALUSeeCollectorV6 = true;
+  if (window.__WORTHPROOFCollectorV6) return;
+  window.__WORTHPROOFCollectorV6 = true;
 
   const clean = (value) => String(value || '').trim().replace(/\s+/g, ' ');
   const firstText = (selectors) => {
@@ -283,7 +283,7 @@
       selected_variant: selectedVariant(), region: firstText(selectors.region) || 'unknown',
       membership: memberPriceText ? '页面显示会员条件' : 'unknown', observation_status: 'requires_confirmation',
       evidence: { type: 'browser_visible_page', url: canonicalUrl(), page_title: document.title, image_url: imageUrl, collector_version: '0.4.3', price_basis: effectivePrice ? 'visible_effective_price' : wholesalePrice ? 'visible_wholesale_minimum' : 'visible_page_price' },
-      notes: `由 ValuSee 扩展读取当前可见页面；${effectivePrice ? '当前价格采用页面券后/到手价，不再重复扣减页面优惠；' : ''}${wholesalePrice ? '当前价格采用批发区间最低价，最终价格须按包装规格和采购数量确认；' : ''}发送前请确认 SKU、地区、会员资格、优惠和价格。`,
+      notes: `由 WorthProof 扩展读取当前可见页面；${effectivePrice ? '当前价格采用页面券后/到手价，不再重复扣减页面优惠；' : ''}${wholesalePrice ? '当前价格采用批发区间最低价，最终价格须按包装规格和采购数量确认；' : ''}发送前请确认 SKU、地区、会员资格、优惠和价格。`,
     };
     const missing = [];
     if (!result.title || /^(京东|淘宝网?|天猫|拼多多)(\s*[-_|·].*)?$/.test(result.title)) missing.push('商品标题');
@@ -293,8 +293,8 @@
   };
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (message?.type === 'VALUSee_PING_V6' || message?.type === 'VALUSee_PING_V5' || message?.type === 'VALUSee_PING_V4' || message?.type === 'VALUSee_PING_V3' || message?.type === 'VALUSee_PING_V2') sendResponse({ ok: true, version: '0.4.3' });
-    if (message?.type === 'VALUSee_COLLECT_PRODUCT_V6' || message?.type === 'VALUSee_COLLECT_PRODUCT_V5' || message?.type === 'VALUSee_COLLECT_PRODUCT_V4' || message?.type === 'VALUSee_COLLECT_PRODUCT_V3' || message?.type === 'VALUSee_COLLECT_PRODUCT_V2') {
+    if (message?.type === 'WORTHPROOF_PING_V6' || message?.type === 'WORTHPROOF_PING_V5' || message?.type === 'WORTHPROOF_PING_V4' || message?.type === 'WORTHPROOF_PING_V3' || message?.type === 'WORTHPROOF_PING_V2') sendResponse({ ok: true, version: '0.4.3' });
+    if (message?.type === 'WORTHPROOF_COLLECT_PRODUCT_V6' || message?.type === 'WORTHPROOF_COLLECT_PRODUCT_V5' || message?.type === 'WORTHPROOF_COLLECT_PRODUCT_V4' || message?.type === 'WORTHPROOF_COLLECT_PRODUCT_V3' || message?.type === 'WORTHPROOF_COLLECT_PRODUCT_V2') {
       try { sendResponse({ ok: true, ...collect() }); }
       catch (error) { sendResponse({ ok: false, error: `页面读取失败：${error.message}` }); }
     }

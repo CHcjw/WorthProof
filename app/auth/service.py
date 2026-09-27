@@ -29,7 +29,7 @@ def _unb64(value: str) -> bytes:
 
 
 class AuthStore:
-    def __init__(self, db_path: str | Path = "data/valuesee.db"):
+    def __init__(self, db_path: str | Path = "data/worthproof.db"):
         self.db_path = resolve_runtime_path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_schema()
@@ -45,83 +45,83 @@ class AuthStore:
 
     def _init_schema(self) -> None:
         with self._session() as conn:
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_user(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_user(
                 user_id TEXT PRIMARY KEY,email TEXT NOT NULL UNIQUE,password_hash TEXT NOT NULL,
                 display_name TEXT NOT NULL,status TEXT NOT NULL,created_at TEXT NOT NULL
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_family(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_family(
                 family_id TEXT PRIMARY KEY,name TEXT NOT NULL,owner_id TEXT NOT NULL,created_at TEXT NOT NULL
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_family_member(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_family_member(
                 family_id TEXT NOT NULL,user_id TEXT NOT NULL,role TEXT NOT NULL,created_at TEXT NOT NULL,
                 PRIMARY KEY(family_id,user_id)
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_family_invitation(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_family_invitation(
                 invitation_id TEXT PRIMARY KEY,family_id TEXT NOT NULL,inviter_id TEXT NOT NULL,email TEXT NOT NULL,
                 role TEXT NOT NULL,status TEXT NOT NULL,expires_at TEXT NOT NULL,created_at TEXT NOT NULL,responded_at TEXT
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_family_asset(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_family_asset(
                 asset_id TEXT PRIMARY KEY,family_id TEXT NOT NULL,name TEXT NOT NULL,category TEXT NOT NULL,
                 brand TEXT,model TEXT,purchased_at TEXT,warranty_deadline TEXT,notes TEXT,created_by TEXT NOT NULL,
                 created_at TEXT NOT NULL,updated_at TEXT NOT NULL
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_family_budget(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_family_budget(
                 family_id TEXT PRIMARY KEY,monthly_budget REAL NOT NULL,annual_budget REAL NOT NULL,currency TEXT NOT NULL,
                 updated_by TEXT NOT NULL,updated_at TEXT NOT NULL
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_auth_token(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_auth_token(
                 token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL,purpose TEXT NOT NULL,
                 expires_at TEXT NOT NULL,used_at TEXT,created_at TEXT NOT NULL
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_email_code(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_email_code(
                 email TEXT NOT NULL,purpose TEXT NOT NULL,code_hash TEXT NOT NULL,
                 expires_at TEXT NOT NULL,attempts INTEGER NOT NULL,created_at TEXT NOT NULL,
                 last_sent_at TEXT NOT NULL,PRIMARY KEY(email,purpose)
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_captcha_challenge(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_captcha_challenge(
                 captcha_id TEXT PRIMARY KEY,code_hash TEXT NOT NULL,expires_at TEXT NOT NULL,
                 attempts INTEGER NOT NULL,created_at TEXT NOT NULL
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_session(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_session(
                 session_id TEXT PRIMARY KEY,user_id TEXT NOT NULL,token_hash TEXT NOT NULL UNIQUE,
                 device_name TEXT NOT NULL,ip_address TEXT,status TEXT NOT NULL,created_at TEXT NOT NULL,
                 last_seen_at TEXT NOT NULL,expires_at TEXT NOT NULL,revoked_at TEXT
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_subscription(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_subscription(
                 user_id TEXT PRIMARY KEY,plan_code TEXT NOT NULL,status TEXT NOT NULL,
                 current_period_end TEXT,provider TEXT,external_reference TEXT,updated_at TEXT NOT NULL
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_upgrade_request(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_upgrade_request(
                 request_id TEXT PRIMARY KEY,user_id TEXT NOT NULL,plan_code TEXT NOT NULL,
                 status TEXT NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_billing_order(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_billing_order(
                 order_id TEXT PRIMARY KEY,user_id TEXT NOT NULL,plan_code TEXT NOT NULL,billing_cycle TEXT NOT NULL,
                 amount REAL NOT NULL,currency TEXT NOT NULL,status TEXT NOT NULL,payment_provider TEXT,
                 external_reference TEXT,created_at TEXT NOT NULL,updated_at TEXT NOT NULL
             )""")
-            conn.execute("CREATE INDEX IF NOT EXISTS idx_billing_order_owner ON valuesee_billing_order(user_id,created_at)")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_admin_mfa(
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_billing_order_owner ON worthproof_billing_order(user_id,created_at)")
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_admin_mfa(
                 user_id TEXT PRIMARY KEY,encrypted_secret TEXT NOT NULL,enabled INTEGER NOT NULL,
                 recovery_codes_json TEXT NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_user_profile(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_user_profile(
                 user_id TEXT PRIMARY KEY,bio TEXT NOT NULL,locale TEXT NOT NULL,currency TEXT NOT NULL,
                 avatar_backend TEXT,avatar_key TEXT,avatar_content_type TEXT,avatar_sha256 TEXT,updated_at TEXT NOT NULL
             )""")
-            conn.execute("""CREATE TABLE IF NOT EXISTS valuesee_user_audit(
+            conn.execute("""CREATE TABLE IF NOT EXISTS worthproof_user_audit(
                 audit_id TEXT PRIMARY KEY,user_id TEXT NOT NULL,action TEXT NOT NULL,metadata_json TEXT NOT NULL,created_at TEXT NOT NULL
             )""")
             if conn.backend == "postgresql":
-                conn.execute("ALTER TABLE valuesee_user ADD COLUMN IF NOT EXISTS email_verified INTEGER NOT NULL DEFAULT 0")
-                conn.execute("ALTER TABLE valuesee_session ADD COLUMN IF NOT EXISTS mfa_verified INTEGER NOT NULL DEFAULT 0")
+                conn.execute("ALTER TABLE worthproof_user ADD COLUMN IF NOT EXISTS email_verified INTEGER NOT NULL DEFAULT 0")
+                conn.execute("ALTER TABLE worthproof_session ADD COLUMN IF NOT EXISTS mfa_verified INTEGER NOT NULL DEFAULT 0")
             else:
-                columns = [row["name"] for row in conn.execute("PRAGMA table_info(valuesee_user)").fetchall()]
+                columns = [row["name"] for row in conn.execute("PRAGMA table_info(worthproof_user)").fetchall()]
                 if "email_verified" not in columns:
-                    conn.execute("ALTER TABLE valuesee_user ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0")
-                session_columns = [row["name"] for row in conn.execute("PRAGMA table_info(valuesee_session)").fetchall()]
+                    conn.execute("ALTER TABLE worthproof_user ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0")
+                session_columns = [row["name"] for row in conn.execute("PRAGMA table_info(worthproof_session)").fetchall()]
                 if "mfa_verified" not in session_columns:
-                    conn.execute("ALTER TABLE valuesee_session ADD COLUMN mfa_verified INTEGER NOT NULL DEFAULT 0")
+                    conn.execute("ALTER TABLE worthproof_session ADD COLUMN mfa_verified INTEGER NOT NULL DEFAULT 0")
 
     def register(
         self,
@@ -140,7 +140,7 @@ class AuthStore:
         with self._session() as conn:
             try:
                 conn.execute(
-                    "INSERT INTO valuesee_user(user_id,email,password_hash,display_name,status,created_at,email_verified) VALUES(?,?,?,?,?,?,?)",
+                    "INSERT INTO worthproof_user(user_id,email,password_hash,display_name,status,created_at,email_verified) VALUES(?,?,?,?,?,?,?)",
                     (
                         user_id,
                         normalized,
@@ -159,7 +159,7 @@ class AuthStore:
 
     def authenticate(self, email: str, password: str) -> dict[str, Any] | None:
         with self._session() as conn:
-            row = conn.execute("SELECT * FROM valuesee_user WHERE email = ? AND status = 'active'", (email.strip().lower(),)).fetchone()
+            row = conn.execute("SELECT * FROM worthproof_user WHERE email = ? AND status = 'active'", (email.strip().lower(),)).fetchone()
         if not row or not verify_password(password, row["password_hash"]):
             return None
         return _public_user(row)
@@ -169,19 +169,19 @@ class AuthStore:
             return False
         with self._session() as conn:
             row = conn.execute(
-                "SELECT password_hash FROM valuesee_user WHERE user_id=? AND status='active'",
+                "SELECT password_hash FROM worthproof_user WHERE user_id=? AND status='active'",
                 (user_id,),
             ).fetchone()
         return bool(row and verify_password(password, str(row["password_hash"])))
 
     def get_user(self, user_id: str) -> dict[str, Any] | None:
         with self._session() as conn:
-            row = conn.execute("SELECT * FROM valuesee_user WHERE user_id = ?", (user_id,)).fetchone()
+            row = conn.execute("SELECT * FROM worthproof_user WHERE user_id = ?", (user_id,)).fetchone()
         return _public_user(row) if row else None
 
     def get_user_by_email(self, email: str) -> dict[str, Any] | None:
         with self._session() as conn:
-            row = conn.execute("SELECT * FROM valuesee_user WHERE email=? AND status='active'", (email.strip().lower(),)).fetchone()
+            row = conn.execute("SELECT * FROM worthproof_user WHERE email=? AND status='active'", (email.strip().lower(),)).fetchone()
         return _public_user(row) if row else None
 
     def issue_email_code(
@@ -198,7 +198,7 @@ class AuthStore:
         now = datetime.now(timezone.utc)
         with self._session() as conn:
             previous = conn.execute(
-                "SELECT last_sent_at FROM valuesee_email_code WHERE email=? AND purpose=?",
+                "SELECT last_sent_at FROM worthproof_email_code WHERE email=? AND purpose=?",
                 (normalized, purpose),
             ).fetchone()
             if previous and (now - _parse_utc(previous["last_sent_at"])).total_seconds() < cooldown_seconds:
@@ -209,7 +209,7 @@ class AuthStore:
             ).isoformat().replace("+00:00", "Z")
             sent_at = now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
             conn.execute(
-                """INSERT INTO valuesee_email_code(
+                """INSERT INTO worthproof_email_code(
                     email,purpose,code_hash,expires_at,attempts,created_at,last_sent_at
                 ) VALUES(?,?,?,?,?,?,?) ON CONFLICT(email,purpose) DO UPDATE SET
                     code_hash=excluded.code_hash,expires_at=excluded.expires_at,
@@ -232,7 +232,7 @@ class AuthStore:
         now = datetime.now(timezone.utc)
         with self._session() as conn:
             row = conn.execute(
-                "SELECT code_hash,expires_at,attempts FROM valuesee_email_code WHERE email=? AND purpose=?",
+                "SELECT code_hash,expires_at,attempts FROM worthproof_email_code WHERE email=? AND purpose=?",
                 (normalized, purpose),
             ).fetchone()
             if not row or int(row["attempts"]) >= 5 or _parse_utc(row["expires_at"]) < now:
@@ -240,12 +240,12 @@ class AuthStore:
             expected = _email_code_hash(normalized, purpose, supplied)
             if not hmac.compare_digest(str(row["code_hash"]), expected):
                 conn.execute(
-                    "UPDATE valuesee_email_code SET attempts=attempts+1 WHERE email=? AND purpose=?",
+                    "UPDATE worthproof_email_code SET attempts=attempts+1 WHERE email=? AND purpose=?",
                     (normalized, purpose),
                 )
                 return False
             conn.execute(
-                "DELETE FROM valuesee_email_code WHERE email=? AND purpose=?",
+                "DELETE FROM worthproof_email_code WHERE email=? AND purpose=?",
                 (normalized, purpose),
             )
         return True
@@ -256,9 +256,9 @@ class AuthStore:
         now = datetime.now(timezone.utc)
         expires_at = (now + timedelta(seconds=max(60, min(ttl_seconds, 600)))).replace(microsecond=0).isoformat().replace("+00:00", "Z")
         with self._session() as conn:
-            conn.execute("DELETE FROM valuesee_captcha_challenge WHERE expires_at < ?", (now.replace(microsecond=0).isoformat().replace("+00:00", "Z"),))
+            conn.execute("DELETE FROM worthproof_captcha_challenge WHERE expires_at < ?", (now.replace(microsecond=0).isoformat().replace("+00:00", "Z"),))
             conn.execute(
-                "INSERT INTO valuesee_captcha_challenge(captcha_id,code_hash,expires_at,attempts,created_at) VALUES(?,?,?,?,?)",
+                "INSERT INTO worthproof_captcha_challenge(captcha_id,code_hash,expires_at,attempts,created_at) VALUES(?,?,?,?,?)",
                 (captcha_id, _captcha_code_hash(captcha_id, code), expires_at, 0, now.replace(microsecond=0).isoformat().replace("+00:00", "Z")),
             )
         return captcha_id, code
@@ -269,22 +269,22 @@ class AuthStore:
         now = datetime.now(timezone.utc)
         with self._session() as conn:
             row = conn.execute(
-                "SELECT code_hash,expires_at,attempts FROM valuesee_captcha_challenge WHERE captcha_id=?",
+                "SELECT code_hash,expires_at,attempts FROM worthproof_captcha_challenge WHERE captcha_id=?",
                 (supplied_id,),
             ).fetchone()
             if not row or int(row["attempts"]) >= 5 or _parse_utc(row["expires_at"]) < now:
                 return False
             expected = _captcha_code_hash(supplied_id, supplied_code)
             if not hmac.compare_digest(str(row["code_hash"]), expected):
-                conn.execute("UPDATE valuesee_captcha_challenge SET attempts=attempts+1 WHERE captcha_id=?", (supplied_id,))
+                conn.execute("UPDATE worthproof_captcha_challenge SET attempts=attempts+1 WHERE captcha_id=?", (supplied_id,))
                 return False
-            conn.execute("DELETE FROM valuesee_captcha_challenge WHERE captcha_id=?", (supplied_id,))
+            conn.execute("DELETE FROM worthproof_captcha_challenge WHERE captcha_id=?", (supplied_id,))
         return True
 
     def delete_email_code(self, email: str, purpose: str) -> None:
         with self._session() as conn:
             conn.execute(
-                "DELETE FROM valuesee_email_code WHERE email=? AND purpose=?",
+                "DELETE FROM worthproof_email_code WHERE email=? AND purpose=?",
                 (email.strip().lower(), purpose),
             )
 
@@ -293,7 +293,7 @@ class AuthStore:
         if not user:
             raise ValueError("user not found")
         with self._session() as conn:
-            row = conn.execute("SELECT * FROM valuesee_user_profile WHERE user_id=?", (user_id,)).fetchone()
+            row = conn.execute("SELECT * FROM worthproof_user_profile WHERE user_id=?", (user_id,)).fetchone()
         profile = dict(row) if row else {"user_id": user_id, "bio": "", "locale": "zh-CN", "currency": "CNY", "avatar_backend": None, "avatar_key": None, "avatar_content_type": None, "avatar_sha256": None, "updated_at": None}
         profile["display_name"] = user["display_name"]
         profile["email"] = user["email"]
@@ -312,28 +312,28 @@ class AuthStore:
             raise ValueError("invalid account profile")
         now = utc_now_iso()
         with self._session() as conn:
-            if not conn.execute("SELECT 1 FROM valuesee_user WHERE user_id=?", (user_id,)).fetchone():
+            if not conn.execute("SELECT 1 FROM worthproof_user WHERE user_id=?", (user_id,)).fetchone():
                 raise ValueError("user not found")
-            conn.execute("UPDATE valuesee_user SET display_name=? WHERE user_id=?", (display_name, user_id))
-            old = conn.execute("SELECT avatar_backend,avatar_key,avatar_content_type,avatar_sha256 FROM valuesee_user_profile WHERE user_id=?", (user_id,)).fetchone()
+            conn.execute("UPDATE worthproof_user SET display_name=? WHERE user_id=?", (display_name, user_id))
+            old = conn.execute("SELECT avatar_backend,avatar_key,avatar_content_type,avatar_sha256 FROM worthproof_user_profile WHERE user_id=?", (user_id,)).fetchone()
             avatar = tuple(old[key] for key in ("avatar_backend", "avatar_key", "avatar_content_type", "avatar_sha256")) if old else (None, None, None, None)
-            conn.execute("INSERT INTO valuesee_user_profile(user_id,bio,locale,currency,avatar_backend,avatar_key,avatar_content_type,avatar_sha256,updated_at) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET bio=excluded.bio,locale=excluded.locale,currency=excluded.currency,updated_at=excluded.updated_at", (user_id, bio, locale, currency, *avatar, now))
+            conn.execute("INSERT INTO worthproof_user_profile(user_id,bio,locale,currency,avatar_backend,avatar_key,avatar_content_type,avatar_sha256,updated_at) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET bio=excluded.bio,locale=excluded.locale,currency=excluded.currency,updated_at=excluded.updated_at", (user_id, bio, locale, currency, *avatar, now))
         self.record_user_audit(user_id, "profile.updated", {"locale": locale, "currency": currency})
         return self.account_profile(user_id)
 
     def set_account_avatar(self, user_id: str, metadata: dict[str, str]) -> dict[str, Any]:
         now = utc_now_iso()
         with self._session() as conn:
-            old = conn.execute("SELECT avatar_backend,avatar_key FROM valuesee_user_profile WHERE user_id=?", (user_id,)).fetchone()
-            profile = conn.execute("SELECT bio,locale,currency FROM valuesee_user_profile WHERE user_id=?", (user_id,)).fetchone()
+            old = conn.execute("SELECT avatar_backend,avatar_key FROM worthproof_user_profile WHERE user_id=?", (user_id,)).fetchone()
+            profile = conn.execute("SELECT bio,locale,currency FROM worthproof_user_profile WHERE user_id=?", (user_id,)).fetchone()
             base = (profile["bio"], profile["locale"], profile["currency"]) if profile else ("", "zh-CN", "CNY")
-            conn.execute("INSERT INTO valuesee_user_profile(user_id,bio,locale,currency,avatar_backend,avatar_key,avatar_content_type,avatar_sha256,updated_at) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET avatar_backend=excluded.avatar_backend,avatar_key=excluded.avatar_key,avatar_content_type=excluded.avatar_content_type,avatar_sha256=excluded.avatar_sha256,updated_at=excluded.updated_at", (user_id, *base, metadata["backend"], metadata["key"], metadata["content_type"], metadata["sha256"], now))
+            conn.execute("INSERT INTO worthproof_user_profile(user_id,bio,locale,currency,avatar_backend,avatar_key,avatar_content_type,avatar_sha256,updated_at) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET avatar_backend=excluded.avatar_backend,avatar_key=excluded.avatar_key,avatar_content_type=excluded.avatar_content_type,avatar_sha256=excluded.avatar_sha256,updated_at=excluded.updated_at", (user_id, *base, metadata["backend"], metadata["key"], metadata["content_type"], metadata["sha256"], now))
         self.record_user_audit(user_id, "avatar.updated", {"content_type": metadata["content_type"]})
         return {"old_backend": old["avatar_backend"] if old else None, "old_key": old["avatar_key"] if old else None, **self.account_profile(user_id)}
 
     def account_avatar(self, user_id: str) -> dict[str, Any] | None:
         with self._session() as conn:
-            row = conn.execute("SELECT avatar_backend,avatar_key,avatar_content_type FROM valuesee_user_profile WHERE user_id=? AND avatar_key IS NOT NULL", (user_id,)).fetchone()
+            row = conn.execute("SELECT avatar_backend,avatar_key,avatar_content_type FROM worthproof_user_profile WHERE user_id=? AND avatar_key IS NOT NULL", (user_id,)).fetchone()
         return dict(row) if row else None
 
     def account_bindings(self, user_id: str) -> list[dict[str, Any]]:
@@ -342,40 +342,40 @@ class AuthStore:
 
     def record_user_audit(self, user_id: str, action: str, metadata: dict[str, Any] | None = None) -> None:
         with self._session() as conn:
-            conn.execute("INSERT INTO valuesee_user_audit(audit_id,user_id,action,metadata_json,created_at) VALUES(?,?,?,?,?)", (f"uaudit_{uuid4().hex}", user_id, action, json.dumps(metadata or {}, ensure_ascii=False), datetime.now(timezone.utc).isoformat()))
+            conn.execute("INSERT INTO worthproof_user_audit(audit_id,user_id,action,metadata_json,created_at) VALUES(?,?,?,?,?)", (f"uaudit_{uuid4().hex}", user_id, action, json.dumps(metadata or {}, ensure_ascii=False), datetime.now(timezone.utc).isoformat()))
 
     def list_user_audits(self, user_id: str, limit: int = 100) -> list[dict[str, Any]]:
         with self._session() as conn:
-            rows = conn.execute("SELECT audit_id,action,metadata_json,created_at FROM valuesee_user_audit WHERE user_id=? ORDER BY created_at DESC LIMIT ?", (user_id, max(1, min(limit, 200)))).fetchall()
+            rows = conn.execute("SELECT audit_id,action,metadata_json,created_at FROM worthproof_user_audit WHERE user_id=? ORDER BY created_at DESC LIMIT ?", (user_id, max(1, min(limit, 200)))).fetchall()
         return [{**dict(row), "metadata": json.loads(row["metadata_json"])} for row in rows]
 
     def list_users(self, limit: int = 500) -> list[dict[str, Any]]:
         with self._session() as conn:
-            rows = conn.execute("SELECT user_id,email,display_name,status,email_verified,created_at FROM valuesee_user ORDER BY created_at DESC LIMIT ?", (max(1, min(limit, 1000)),)).fetchall()
+            rows = conn.execute("SELECT user_id,email,display_name,status,email_verified,created_at FROM worthproof_user ORDER BY created_at DESC LIMIT ?", (max(1, min(limit, 1000)),)).fetchall()
         return [{**dict(row), "email_verified": bool(row["email_verified"])} for row in rows]
 
     def update_user_status(self, user_id: str, status: str) -> dict[str, Any] | None:
         if status not in {"active", "suspended"}:
             raise ValueError("invalid user status")
         with self._session() as conn:
-            if not conn.execute("SELECT 1 FROM valuesee_user WHERE user_id=?", (user_id,)).fetchone():
+            if not conn.execute("SELECT 1 FROM worthproof_user WHERE user_id=?", (user_id,)).fetchone():
                 return None
-            conn.execute("UPDATE valuesee_user SET status=? WHERE user_id=?", (status, user_id))
+            conn.execute("UPDATE worthproof_user SET status=? WHERE user_id=?", (status, user_id))
             if status == "suspended":
-                conn.execute("UPDATE valuesee_session SET status='revoked',revoked_at=? WHERE user_id=? AND status='active'", (utc_now_iso(), user_id))
+                conn.execute("UPDATE worthproof_session SET status='revoked',revoked_at=? WHERE user_id=? AND status='active'", (utc_now_iso(), user_id))
         return self.get_user(user_id)
 
     def list_upgrade_requests(self) -> list[dict[str, Any]]:
         with self._session() as conn:
-            rows = conn.execute("SELECT r.*,u.email,u.display_name FROM valuesee_upgrade_request r JOIN valuesee_user u ON u.user_id=r.user_id ORDER BY r.updated_at DESC LIMIT 500").fetchall()
+            rows = conn.execute("SELECT r.*,u.email,u.display_name FROM worthproof_upgrade_request r JOIN worthproof_user u ON u.user_id=r.user_id ORDER BY r.updated_at DESC LIMIT 500").fetchall()
         return [dict(row) for row in rows]
 
     def update_upgrade_request(self, request_id: str, status: str) -> dict[str, Any] | None:
         if status not in {"pending", "contacted", "rejected"}:
             raise ValueError("invalid upgrade request status")
         with self._session() as conn:
-            conn.execute("UPDATE valuesee_upgrade_request SET status=?,updated_at=? WHERE request_id=?", (status, utc_now_iso(), request_id))
-            row = conn.execute("SELECT * FROM valuesee_upgrade_request WHERE request_id=?", (request_id,)).fetchone()
+            conn.execute("UPDATE worthproof_upgrade_request SET status=?,updated_at=? WHERE request_id=?", (status, utc_now_iso(), request_id))
+            row = conn.execute("SELECT * FROM worthproof_upgrade_request WHERE request_id=?", (request_id,)).fetchone()
         return dict(row) if row else None
 
     def create_action_token(self, user_id: str, purpose: str, ttl_minutes: int = 30) -> str:
@@ -384,9 +384,9 @@ class AuthStore:
         now = datetime.now(timezone.utc)
         expires = now + timedelta(minutes=max(5, min(ttl_minutes, 1440)))
         with self._session() as conn:
-            conn.execute("DELETE FROM valuesee_auth_token WHERE user_id=? AND purpose=? AND used_at IS NULL", (user_id, purpose))
+            conn.execute("DELETE FROM worthproof_auth_token WHERE user_id=? AND purpose=? AND used_at IS NULL", (user_id, purpose))
             conn.execute(
-                "INSERT INTO valuesee_auth_token(token_hash,user_id,purpose,expires_at,used_at,created_at) VALUES(?,?,?,?,?,?)",
+                "INSERT INTO worthproof_auth_token(token_hash,user_id,purpose,expires_at,used_at,created_at) VALUES(?,?,?,?,?,?)",
                 (digest, user_id, purpose, expires.replace(microsecond=0).isoformat().replace("+00:00", "Z"), None, utc_now_iso()),
             )
         return raw
@@ -395,10 +395,10 @@ class AuthStore:
         digest = hashlib.sha256(raw.encode()).hexdigest()
         now = datetime.now(timezone.utc)
         with self._session() as conn:
-            row = conn.execute("SELECT * FROM valuesee_auth_token WHERE token_hash=? AND purpose=? AND used_at IS NULL", (digest, purpose)).fetchone()
+            row = conn.execute("SELECT * FROM worthproof_auth_token WHERE token_hash=? AND purpose=? AND used_at IS NULL", (digest, purpose)).fetchone()
             if not row or _parse_utc(row["expires_at"]) < now:
                 return None
-            conn.execute("UPDATE valuesee_auth_token SET used_at=? WHERE token_hash=?", (utc_now_iso(), digest))
+            conn.execute("UPDATE worthproof_auth_token SET used_at=? WHERE token_hash=?", (utc_now_iso(), digest))
             return str(row["user_id"])
 
     def verify_email(self, raw: str) -> dict[str, Any] | None:
@@ -406,7 +406,7 @@ class AuthStore:
         if not user_id:
             return None
         with self._session() as conn:
-            conn.execute("UPDATE valuesee_user SET email_verified=1 WHERE user_id=?", (user_id,))
+            conn.execute("UPDATE worthproof_user SET email_verified=1 WHERE user_id=?", (user_id,))
         return self.get_user(user_id)
 
     def reset_password(self, raw: str, password: str) -> bool:
@@ -416,8 +416,8 @@ class AuthStore:
         if not user_id:
             return False
         with self._session() as conn:
-            conn.execute("UPDATE valuesee_user SET password_hash=? WHERE user_id=?", (hash_password(password), user_id))
-            conn.execute("UPDATE valuesee_session SET status='revoked',revoked_at=? WHERE user_id=? AND status='active'", (utc_now_iso(), user_id))
+            conn.execute("UPDATE worthproof_user SET password_hash=? WHERE user_id=?", (hash_password(password), user_id))
+            conn.execute("UPDATE worthproof_session SET status='revoked',revoked_at=? WHERE user_id=? AND status='active'", (utc_now_iso(), user_id))
         return True
 
     def create_session(self, user_id: str, device_name: str = "浏览器", ip_address: str | None = None, expires_seconds: int = 86_400, mfa_verified: bool = False) -> str:
@@ -427,14 +427,14 @@ class AuthStore:
         expires_at = (now + timedelta(seconds=expires_seconds)).replace(microsecond=0).isoformat().replace("+00:00", "Z")
         with self._session() as conn:
             conn.execute(
-                "INSERT INTO valuesee_session(session_id,user_id,token_hash,device_name,ip_address,status,created_at,last_seen_at,expires_at,revoked_at,mfa_verified) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO worthproof_session(session_id,user_id,token_hash,device_name,ip_address,status,created_at,last_seen_at,expires_at,revoked_at,mfa_verified) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                 (session_id, user_id, hashlib.sha256(token.encode()).hexdigest(), device_name.strip()[:160] or "浏览器", ip_address, "active", utc_now_iso(), utc_now_iso(), expires_at, None, 1 if mfa_verified else 0),
             )
         return token
 
     def admin_mfa_status(self, user_id: str) -> dict[str, Any]:
         with self._session() as conn:
-            row = conn.execute("SELECT enabled,created_at,updated_at FROM valuesee_admin_mfa WHERE user_id=?", (user_id,)).fetchone()
+            row = conn.execute("SELECT enabled,created_at,updated_at FROM worthproof_admin_mfa WHERE user_id=?", (user_id,)).fetchone()
         return {"configured": bool(row), "enabled": bool(row["enabled"]) if row else False, "created_at": row["created_at"] if row else None, "updated_at": row["updated_at"] if row else None}
 
     def setup_admin_mfa(self, user_id: str, email: str) -> dict[str, Any]:
@@ -443,8 +443,8 @@ class AuthStore:
         hashes = [_recovery_hash(code) for code in recovery_codes]
         now = utc_now_iso()
         with self._session() as conn:
-            conn.execute("INSERT INTO valuesee_admin_mfa(user_id,encrypted_secret,enabled,recovery_codes_json,created_at,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET encrypted_secret=excluded.encrypted_secret,enabled=0,recovery_codes_json=excluded.recovery_codes_json,updated_at=excluded.updated_at", (user_id, _encrypt_mfa_secret(secret), 0, json.dumps(hashes), now, now))
-        issuer = "ValuSee"
+            conn.execute("INSERT INTO worthproof_admin_mfa(user_id,encrypted_secret,enabled,recovery_codes_json,created_at,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET encrypted_secret=excluded.encrypted_secret,enabled=0,recovery_codes_json=excluded.recovery_codes_json,updated_at=excluded.updated_at", (user_id, _encrypt_mfa_secret(secret), 0, json.dumps(hashes), now, now))
+        issuer = "WorthProof"
         label = f"{issuer}:{email}"
         return {"secret": secret, "otpauth_uri": f"otpauth://totp/{label}?secret={secret}&issuer={issuer}&digits=6&period=30", "recovery_codes": recovery_codes, "enabled": False}
 
@@ -452,8 +452,8 @@ class AuthStore:
         if not self._verify_admin_mfa(user_id, code, allow_recovery=False):
             return False
         with self._session() as conn:
-            conn.execute("UPDATE valuesee_admin_mfa SET enabled=1,updated_at=? WHERE user_id=?", (utc_now_iso(), user_id))
-            conn.execute("UPDATE valuesee_session SET status='revoked',revoked_at=? WHERE user_id=? AND status='active'", (utc_now_iso(), user_id))
+            conn.execute("UPDATE worthproof_admin_mfa SET enabled=1,updated_at=? WHERE user_id=?", (utc_now_iso(), user_id))
+            conn.execute("UPDATE worthproof_session SET status='revoked',revoked_at=? WHERE user_id=? AND status='active'", (utc_now_iso(), user_id))
         return True
 
     def verify_admin_mfa(self, user_id: str, code: str) -> bool:
@@ -463,7 +463,7 @@ class AuthStore:
     def _verify_admin_mfa(self, user_id: str, code: str, *, allow_recovery: bool) -> bool:
         value = code.strip().replace(" ", "")
         with self._session() as conn:
-            row = conn.execute("SELECT encrypted_secret,recovery_codes_json FROM valuesee_admin_mfa WHERE user_id=?", (user_id,)).fetchone()
+            row = conn.execute("SELECT encrypted_secret,recovery_codes_json FROM worthproof_admin_mfa WHERE user_id=?", (user_id,)).fetchone()
             if not row:
                 return False
             secret = _decrypt_mfa_secret(str(row["encrypted_secret"]))
@@ -474,7 +474,7 @@ class AuthStore:
                 hashes = json.loads(row["recovery_codes_json"])
                 if digest in hashes:
                     hashes.remove(digest)
-                    conn.execute("UPDATE valuesee_admin_mfa SET recovery_codes_json=?,updated_at=? WHERE user_id=?", (json.dumps(hashes), utc_now_iso(), user_id))
+                    conn.execute("UPDATE worthproof_admin_mfa SET recovery_codes_json=?,updated_at=? WHERE user_id=?", (json.dumps(hashes), utc_now_iso(), user_id))
                     return True
         return False
 
@@ -483,37 +483,37 @@ class AuthStore:
         if not verified and not self.verify_user_password(user_id, password):
             return False
         with self._session() as conn:
-            conn.execute("DELETE FROM valuesee_admin_mfa WHERE user_id=?", (user_id,))
+            conn.execute("DELETE FROM worthproof_admin_mfa WHERE user_id=?", (user_id,))
         return True
 
     def session_mfa_verified(self, token: str) -> bool:
         digest = hashlib.sha256(token.encode()).hexdigest()
         with self._session() as conn:
-            row = conn.execute("SELECT mfa_verified,status FROM valuesee_session WHERE token_hash=?", (digest,)).fetchone()
+            row = conn.execute("SELECT mfa_verified,status FROM worthproof_session WHERE token_hash=?", (digest,)).fetchone()
         return bool(row and row["status"] == "active" and row["mfa_verified"])
 
     def validate_session(self, session_id: str, token: str) -> bool:
         digest = hashlib.sha256(token.encode()).hexdigest()
         with self._session() as conn:
-            row = conn.execute("SELECT status,expires_at,token_hash FROM valuesee_session WHERE session_id=?", (session_id,)).fetchone()
+            row = conn.execute("SELECT status,expires_at,token_hash FROM worthproof_session WHERE session_id=?", (session_id,)).fetchone()
             if not row or row["status"] != "active" or not hmac.compare_digest(str(row["token_hash"]), digest) or _parse_utc(row["expires_at"]) < datetime.now(timezone.utc):
                 return False
-            conn.execute("UPDATE valuesee_session SET last_seen_at=? WHERE session_id=?", (utc_now_iso(), session_id))
+            conn.execute("UPDATE worthproof_session SET last_seen_at=? WHERE session_id=?", (utc_now_iso(), session_id))
         return True
 
     def list_sessions(self, user_id: str, current_token: str | None = None) -> list[dict[str, Any]]:
         current_hash = hashlib.sha256(current_token.encode()).hexdigest() if current_token else ""
         with self._session() as conn:
-            rows = conn.execute("SELECT session_id,device_name,ip_address,status,created_at,last_seen_at,expires_at,revoked_at,token_hash FROM valuesee_session WHERE user_id=? ORDER BY last_seen_at DESC", (user_id,)).fetchall()
+            rows = conn.execute("SELECT session_id,device_name,ip_address,status,created_at,last_seen_at,expires_at,revoked_at,token_hash FROM worthproof_session WHERE user_id=? ORDER BY last_seen_at DESC", (user_id,)).fetchall()
         return [{**{key: row[key] for key in ("session_id", "device_name", "ip_address", "status", "created_at", "last_seen_at", "expires_at", "revoked_at")}, "current": bool(current_hash and hmac.compare_digest(str(row["token_hash"]), current_hash))} for row in rows]
 
     def revoke_session(self, user_id: str, session_id: str) -> bool:
         with self._session() as conn:
-            return conn.execute("UPDATE valuesee_session SET status='revoked',revoked_at=? WHERE session_id=? AND user_id=? AND status='active'", (utc_now_iso(), session_id, user_id)).rowcount > 0
+            return conn.execute("UPDATE worthproof_session SET status='revoked',revoked_at=? WHERE session_id=? AND user_id=? AND status='active'", (utc_now_iso(), session_id, user_id)).rowcount > 0
 
     def subscription_status(self, user_id: str) -> dict[str, Any]:
         with self._session() as conn:
-            row = conn.execute("SELECT * FROM valuesee_subscription WHERE user_id=?", (user_id,)).fetchone()
+            row = conn.execute("SELECT * FROM worthproof_subscription WHERE user_id=?", (user_id,)).fetchone()
         plan = str(row["plan_code"]) if row and row["status"] == "active" else "free"
         limits = {"free": {"active_monitors": 3, "monthly_comparisons": 10, "family_members": 2}, "pro": {"active_monitors": 100, "monthly_comparisons": 1000, "family_members": 6}}
         return {"plan_code": plan, "status": str(row["status"]) if row else "active", "current_period_end": row["current_period_end"] if row else None, "provider": row["provider"] if row else None, "limits": limits[plan]}
@@ -525,7 +525,7 @@ class AuthStore:
             queries = {
                 "active_monitors": ("SELECT COUNT(*) AS total FROM shopping_price_monitor WHERE user_id=? AND status IN ('watching','paused','target_reached')", (user_id,)),
                 "monthly_comparisons": ("SELECT COUNT(*) AS total FROM shopping_comparison_list WHERE user_id=? AND created_at>=?", (user_id, month_start)),
-                "family_members": ("SELECT COALESCE(MAX(member_total),1) AS total FROM (SELECT COUNT(*) AS member_total FROM valuesee_family_member WHERE family_id IN (SELECT family_id FROM valuesee_family WHERE owner_id=?) GROUP BY family_id) counts", (user_id,)),
+                "family_members": ("SELECT COALESCE(MAX(member_total),1) AS total FROM (SELECT COUNT(*) AS member_total FROM worthproof_family_member WHERE family_id IN (SELECT family_id FROM worthproof_family WHERE owner_id=?) GROUP BY family_id) counts", (user_id,)),
             }
             for key, (sql, params) in queries.items():
                 try:
@@ -550,10 +550,10 @@ class AuthStore:
             raise ValueError("unsupported plan")
         now, request_id = utc_now_iso(), f"upgrade_{uuid4().hex}"
         with self._session() as conn:
-            existing = conn.execute("SELECT * FROM valuesee_upgrade_request WHERE user_id=? AND plan_code=? AND status='pending'", (user_id, plan_code)).fetchone()
+            existing = conn.execute("SELECT * FROM worthproof_upgrade_request WHERE user_id=? AND plan_code=? AND status='pending'", (user_id, plan_code)).fetchone()
             if existing:
                 return dict(existing)
-            conn.execute("INSERT INTO valuesee_upgrade_request VALUES(?,?,?,?,?,?)", (request_id, user_id, plan_code, "pending", now, now))
+            conn.execute("INSERT INTO worthproof_upgrade_request VALUES(?,?,?,?,?,?)", (request_id, user_id, plan_code, "pending", now, now))
         return {"request_id": request_id, "user_id": user_id, "plan_code": plan_code, "status": "pending", "created_at": now, "updated_at": now}
 
     def create_billing_order(self, user_id: str, plan_code: str, billing_cycle: str) -> dict[str, Any]:
@@ -562,53 +562,53 @@ class AuthStore:
             raise ValueError("unsupported plan or billing cycle")
         now, order_id = utc_now_iso(), f"bill_{uuid4().hex}"
         with self._session() as conn:
-            existing = conn.execute("SELECT * FROM valuesee_billing_order WHERE user_id=? AND plan_code=? AND billing_cycle=? AND status='pending_external_payment' ORDER BY created_at DESC LIMIT 1", (user_id, plan_code, billing_cycle)).fetchone()
+            existing = conn.execute("SELECT * FROM worthproof_billing_order WHERE user_id=? AND plan_code=? AND billing_cycle=? AND status='pending_external_payment' ORDER BY created_at DESC LIMIT 1", (user_id, plan_code, billing_cycle)).fetchone()
             if existing:
                 return dict(existing)
-            conn.execute("INSERT INTO valuesee_billing_order VALUES(?,?,?,?,?,?,?,?,?,?,?)", (order_id, user_id, plan_code, billing_cycle, prices[(plan_code, billing_cycle)], "CNY", "pending_external_payment", None, None, now, now))
-            row = conn.execute("SELECT * FROM valuesee_billing_order WHERE order_id=?", (order_id,)).fetchone()
+            conn.execute("INSERT INTO worthproof_billing_order VALUES(?,?,?,?,?,?,?,?,?,?,?)", (order_id, user_id, plan_code, billing_cycle, prices[(plan_code, billing_cycle)], "CNY", "pending_external_payment", None, None, now, now))
+            row = conn.execute("SELECT * FROM worthproof_billing_order WHERE order_id=?", (order_id,)).fetchone()
         return dict(row)
 
     def list_billing_orders(self, user_id: str) -> list[dict[str, Any]]:
         with self._session() as conn:
-            return [dict(row) for row in conn.execute("SELECT * FROM valuesee_billing_order WHERE user_id=? ORDER BY created_at DESC", (user_id,)).fetchall()]
+            return [dict(row) for row in conn.execute("SELECT * FROM worthproof_billing_order WHERE user_id=? ORDER BY created_at DESC", (user_id,)).fetchall()]
 
     def cancel_billing_order(self, user_id: str, order_id: str) -> dict[str, Any] | None:
         with self._session() as conn:
-            row = conn.execute("SELECT * FROM valuesee_billing_order WHERE order_id=? AND user_id=?", (order_id, user_id)).fetchone()
+            row = conn.execute("SELECT * FROM worthproof_billing_order WHERE order_id=? AND user_id=?", (order_id, user_id)).fetchone()
             if not row:
                 return None
             if row["status"] != "pending_external_payment":
                 raise ValueError("only pending payment orders can be cancelled")
-            conn.execute("UPDATE valuesee_billing_order SET status='cancelled',updated_at=? WHERE order_id=?", (utc_now_iso(), order_id))
-            updated = conn.execute("SELECT * FROM valuesee_billing_order WHERE order_id=?", (order_id,)).fetchone()
+            conn.execute("UPDATE worthproof_billing_order SET status='cancelled',updated_at=? WHERE order_id=?", (utc_now_iso(), order_id))
+            updated = conn.execute("SELECT * FROM worthproof_billing_order WHERE order_id=?", (order_id,)).fetchone()
         return dict(updated)
 
     def create_family(self, owner_id: str, name: str) -> dict[str, Any]:
         family_id, now = f"fam_{uuid4().hex}", utc_now_iso()
         with self._session() as conn:
-            conn.execute("INSERT INTO valuesee_family VALUES(?,?,?,?)", (family_id, name.strip() or "我的家庭", owner_id, now))
-            conn.execute("INSERT INTO valuesee_family_member VALUES(?,?,?,?)", (family_id, owner_id, "owner", now))
+            conn.execute("INSERT INTO worthproof_family VALUES(?,?,?,?)", (family_id, name.strip() or "我的家庭", owner_id, now))
+            conn.execute("INSERT INTO worthproof_family_member VALUES(?,?,?,?)", (family_id, owner_id, "owner", now))
         return {"family_id": family_id, "name": name.strip() or "我的家庭", "owner_id": owner_id, "role": "owner", "created_at": now}
 
     def list_families(self, user_id: str) -> list[dict[str, Any]]:
         with self._session() as conn:
-            rows = conn.execute("""SELECT f.*,m.role FROM valuesee_family f JOIN valuesee_family_member m
+            rows = conn.execute("""SELECT f.*,m.role FROM worthproof_family f JOIN worthproof_family_member m
                 ON f.family_id=m.family_id WHERE m.user_id=? ORDER BY f.created_at DESC""", (user_id,)).fetchall()
         return [dict(row) for row in rows]
 
     def invite_family_member(self, owner_id: str, family_id: str, email: str) -> dict[str, Any]:
         normalized = email.strip().lower()
         with self._session() as conn:
-            family = conn.execute("SELECT * FROM valuesee_family WHERE family_id=? AND owner_id=?", (family_id, owner_id)).fetchone()
-            member = conn.execute("SELECT user_id FROM valuesee_user WHERE email=? AND status='active'", (normalized,)).fetchone()
+            family = conn.execute("SELECT * FROM worthproof_family WHERE family_id=? AND owner_id=?", (family_id, owner_id)).fetchone()
+            member = conn.execute("SELECT user_id FROM worthproof_user WHERE email=? AND status='active'", (normalized,)).fetchone()
             if not family:
                 raise ValueError("只有家庭所有者可以管理成员")
             if not member:
-                raise ValueError("该邮箱尚未注册 ValuSee 账户")
+                raise ValueError("该邮箱尚未注册 WorthProof 账户")
             now = utc_now_iso()
             try:
-                conn.execute("INSERT INTO valuesee_family_member VALUES(?,?,?,?)", (family_id, member["user_id"], "member", now))
+                conn.execute("INSERT INTO worthproof_family_member VALUES(?,?,?,?)", (family_id, member["user_id"], "member", now))
             except Exception as exc:
                 if is_integrity_error(exc):
                     raise ValueError("该用户已经在家庭中") from exc
@@ -621,19 +621,19 @@ class AuthStore:
             raise ValueError("invalid invitation role")
         now = datetime.now(timezone.utc)
         with self._session() as conn:
-            family = conn.execute("SELECT 1 FROM valuesee_family WHERE family_id=? AND owner_id=?", (family_id, owner_id)).fetchone()
-            target = conn.execute("SELECT user_id FROM valuesee_user WHERE email=? AND status='active'", (normalized,)).fetchone()
+            family = conn.execute("SELECT 1 FROM worthproof_family WHERE family_id=? AND owner_id=?", (family_id, owner_id)).fetchone()
+            target = conn.execute("SELECT user_id FROM worthproof_user WHERE email=? AND status='active'", (normalized,)).fetchone()
             if not family:
                 raise ValueError("只有家庭所有者可以邀请成员")
             if not target:
-                raise ValueError("该邮箱尚未注册 ValuSee 账户")
-            if conn.execute("SELECT 1 FROM valuesee_family_member WHERE family_id=? AND user_id=?", (family_id, target["user_id"])).fetchone():
+                raise ValueError("该邮箱尚未注册 WorthProof 账户")
+            if conn.execute("SELECT 1 FROM worthproof_family_member WHERE family_id=? AND user_id=?", (family_id, target["user_id"])).fetchone():
                 raise ValueError("该用户已经在家庭中")
-            existing = conn.execute("SELECT * FROM valuesee_family_invitation WHERE family_id=? AND email=? AND status='pending'", (family_id, normalized)).fetchone()
+            existing = conn.execute("SELECT * FROM worthproof_family_invitation WHERE family_id=? AND email=? AND status='pending'", (family_id, normalized)).fetchone()
             if existing:
                 return dict(existing)
             record = {"invitation_id": f"invite_{uuid4().hex}", "family_id": family_id, "inviter_id": owner_id, "email": normalized, "role": role, "status": "pending", "expires_at": (now + timedelta(days=7)).isoformat(), "created_at": now.isoformat(), "responded_at": None}
-            conn.execute("INSERT INTO valuesee_family_invitation(invitation_id,family_id,inviter_id,email,role,status,expires_at,created_at,responded_at) VALUES(?,?,?,?,?,?,?,?,?)", tuple(record.values()))
+            conn.execute("INSERT INTO worthproof_family_invitation(invitation_id,family_id,inviter_id,email,role,status,expires_at,created_at,responded_at) VALUES(?,?,?,?,?,?,?,?,?)", tuple(record.values()))
         return record
 
     def list_family_invitations(self, user_id: str) -> list[dict[str, Any]]:
@@ -641,34 +641,34 @@ class AuthStore:
         if not user:
             return []
         with self._session() as conn:
-            rows = conn.execute("SELECT i.*,f.name AS family_name FROM valuesee_family_invitation i JOIN valuesee_family f ON f.family_id=i.family_id WHERE i.email=? AND i.status='pending' ORDER BY i.created_at DESC", (user["email"],)).fetchall()
+            rows = conn.execute("SELECT i.*,f.name AS family_name FROM worthproof_family_invitation i JOIN worthproof_family f ON f.family_id=i.family_id WHERE i.email=? AND i.status='pending' ORDER BY i.created_at DESC", (user["email"],)).fetchall()
         return [dict(row) for row in rows]
 
     def respond_family_invitation(self, user_id: str, invitation_id: str, accept: bool) -> dict[str, Any]:
         user = self.get_user(user_id)
         now = datetime.now(timezone.utc)
         with self._session() as conn:
-            row = conn.execute("SELECT * FROM valuesee_family_invitation WHERE invitation_id=? AND status='pending'", (invitation_id,)).fetchone()
+            row = conn.execute("SELECT * FROM worthproof_family_invitation WHERE invitation_id=? AND status='pending'", (invitation_id,)).fetchone()
             if not row or not user or row["email"] != user["email"]:
                 raise ValueError("邀请不存在或不属于当前账户")
             if datetime.fromisoformat(str(row["expires_at"]).replace("Z", "+00:00")) <= now:
-                conn.execute("UPDATE valuesee_family_invitation SET status='expired',responded_at=? WHERE invitation_id=?", (now.isoformat(), invitation_id))
+                conn.execute("UPDATE worthproof_family_invitation SET status='expired',responded_at=? WHERE invitation_id=?", (now.isoformat(), invitation_id))
                 raise ValueError("邀请已过期")
             status = "accepted" if accept else "declined"
             if accept:
-                conn.execute("INSERT INTO valuesee_family_member(family_id,user_id,role,created_at) VALUES(?,?,?,?)", (row["family_id"], user_id, row["role"], now.isoformat()))
-            conn.execute("UPDATE valuesee_family_invitation SET status=?,responded_at=? WHERE invitation_id=?", (status, now.isoformat(), invitation_id))
+                conn.execute("INSERT INTO worthproof_family_member(family_id,user_id,role,created_at) VALUES(?,?,?,?)", (row["family_id"], user_id, row["role"], now.isoformat()))
+            conn.execute("UPDATE worthproof_family_invitation SET status=?,responded_at=? WHERE invitation_id=?", (status, now.isoformat(), invitation_id))
         return {"invitation_id": invitation_id, "status": status, "family_id": row["family_id"]}
 
     def _family_role(self, conn: Any, user_id: str, family_id: str) -> str | None:
-        row = conn.execute("SELECT role FROM valuesee_family_member WHERE family_id=? AND user_id=?", (family_id, user_id)).fetchone()
+        row = conn.execute("SELECT role FROM worthproof_family_member WHERE family_id=? AND user_id=?", (family_id, user_id)).fetchone()
         return str(row["role"]) if row else None
 
     def list_family_assets(self, user_id: str, family_id: str) -> list[dict[str, Any]]:
         with self._session() as conn:
             if not self._family_role(conn, user_id, family_id):
                 raise ValueError("无权查看该家庭物品")
-            rows = conn.execute("SELECT * FROM valuesee_family_asset WHERE family_id=? ORDER BY updated_at DESC", (family_id,)).fetchall()
+            rows = conn.execute("SELECT * FROM worthproof_family_asset WHERE family_id=? ORDER BY updated_at DESC", (family_id,)).fetchall()
         return [dict(row) for row in rows]
 
     def save_family_asset(self, user_id: str, family_id: str, payload: dict[str, Any]) -> dict[str, Any]:
@@ -679,17 +679,17 @@ class AuthStore:
             name = str(payload.get("name") or "").strip()
             if not name:
                 raise ValueError("物品名称不能为空")
-            old = conn.execute("SELECT created_at,created_by FROM valuesee_family_asset WHERE asset_id=? AND family_id=?", (asset_id, family_id)).fetchone()
+            old = conn.execute("SELECT created_at,created_by FROM worthproof_family_asset WHERE asset_id=? AND family_id=?", (asset_id, family_id)).fetchone()
             values = (asset_id, family_id, name, str(payload.get("category") or "其他"), str(payload.get("brand") or ""), str(payload.get("model") or ""), payload.get("purchased_at"), payload.get("warranty_deadline"), str(payload.get("notes") or ""), old["created_by"] if old else user_id, old["created_at"] if old else now, now)
-            conn.execute("""INSERT INTO valuesee_family_asset(asset_id,family_id,name,category,brand,model,purchased_at,warranty_deadline,notes,created_by,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(asset_id) DO UPDATE SET name=excluded.name,category=excluded.category,brand=excluded.brand,model=excluded.model,purchased_at=excluded.purchased_at,warranty_deadline=excluded.warranty_deadline,notes=excluded.notes,updated_at=excluded.updated_at""", values)
-            row = conn.execute("SELECT * FROM valuesee_family_asset WHERE asset_id=?", (asset_id,)).fetchone()
+            conn.execute("""INSERT INTO worthproof_family_asset(asset_id,family_id,name,category,brand,model,purchased_at,warranty_deadline,notes,created_by,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(asset_id) DO UPDATE SET name=excluded.name,category=excluded.category,brand=excluded.brand,model=excluded.model,purchased_at=excluded.purchased_at,warranty_deadline=excluded.warranty_deadline,notes=excluded.notes,updated_at=excluded.updated_at""", values)
+            row = conn.execute("SELECT * FROM worthproof_family_asset WHERE asset_id=?", (asset_id,)).fetchone()
         return dict(row)
 
     def family_budget(self, user_id: str, family_id: str) -> dict[str, Any]:
         with self._session() as conn:
             if not self._family_role(conn, user_id, family_id):
                 raise ValueError("无权查看家庭预算")
-            row = conn.execute("SELECT * FROM valuesee_family_budget WHERE family_id=?", (family_id,)).fetchone()
+            row = conn.execute("SELECT * FROM worthproof_family_budget WHERE family_id=?", (family_id,)).fetchone()
         return dict(row) if row else {"family_id": family_id, "monthly_budget": 0, "annual_budget": 0, "currency": "CNY"}
 
     def save_family_budget(self, user_id: str, family_id: str, payload: dict[str, Any]) -> dict[str, Any]:
@@ -697,16 +697,16 @@ class AuthStore:
             if self._family_role(conn, user_id, family_id) not in {"owner", "editor"}:
                 raise ValueError("只有所有者或编辑者可以维护家庭预算")
             values = (family_id, max(0, float(payload.get("monthly_budget") or 0)), max(0, float(payload.get("annual_budget") or 0)), str(payload.get("currency") or "CNY")[:3].upper(), user_id, utc_now_iso())
-            conn.execute("INSERT INTO valuesee_family_budget(family_id,monthly_budget,annual_budget,currency,updated_by,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(family_id) DO UPDATE SET monthly_budget=excluded.monthly_budget,annual_budget=excluded.annual_budget,currency=excluded.currency,updated_by=excluded.updated_by,updated_at=excluded.updated_at", values)
+            conn.execute("INSERT INTO worthproof_family_budget(family_id,monthly_budget,annual_budget,currency,updated_by,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(family_id) DO UPDATE SET monthly_budget=excluded.monthly_budget,annual_budget=excluded.annual_budget,currency=excluded.currency,updated_by=excluded.updated_by,updated_at=excluded.updated_at", values)
         return self.family_budget(user_id, family_id)
 
     def list_family_members(self, actor_id: str, family_id: str) -> list[dict[str, Any]]:
         with self._session() as conn:
-            allowed = conn.execute("SELECT 1 FROM valuesee_family_member WHERE family_id=? AND user_id=?", (family_id, actor_id)).fetchone()
+            allowed = conn.execute("SELECT 1 FROM worthproof_family_member WHERE family_id=? AND user_id=?", (family_id, actor_id)).fetchone()
             if not allowed:
                 raise ValueError("无权查看该家庭")
             rows = conn.execute("""SELECT m.family_id,m.user_id,m.role,m.created_at,u.email,u.display_name
-                FROM valuesee_family_member m JOIN valuesee_user u ON u.user_id=m.user_id
+                FROM worthproof_family_member m JOIN worthproof_user u ON u.user_id=m.user_id
                 WHERE m.family_id=? ORDER BY CASE m.role WHEN 'owner' THEN 0 ELSE 1 END,m.created_at""", (family_id,)).fetchall()
         return [dict(row) for row in rows]
 
@@ -714,24 +714,24 @@ class AuthStore:
         if role not in {"member", "editor"}:
             raise ValueError("role must be member or editor")
         with self._session() as conn:
-            family = conn.execute("SELECT 1 FROM valuesee_family WHERE family_id=? AND owner_id=?", (family_id, owner_id)).fetchone()
-            member = conn.execute("SELECT role FROM valuesee_family_member WHERE family_id=? AND user_id=?", (family_id, user_id)).fetchone()
+            family = conn.execute("SELECT 1 FROM worthproof_family WHERE family_id=? AND owner_id=?", (family_id, owner_id)).fetchone()
+            member = conn.execute("SELECT role FROM worthproof_family_member WHERE family_id=? AND user_id=?", (family_id, user_id)).fetchone()
             if not family:
                 raise ValueError("只有家庭所有者可以管理成员")
             if not member or member["role"] == "owner":
                 raise ValueError("成员不存在或不能修改所有者角色")
-            conn.execute("UPDATE valuesee_family_member SET role=? WHERE family_id=? AND user_id=?", (role, family_id, user_id))
+            conn.execute("UPDATE worthproof_family_member SET role=? WHERE family_id=? AND user_id=?", (role, family_id, user_id))
         return next(item for item in self.list_family_members(owner_id, family_id) if item["user_id"] == user_id)
 
     def remove_family_member(self, owner_id: str, family_id: str, user_id: str) -> bool:
         with self._session() as conn:
-            family = conn.execute("SELECT 1 FROM valuesee_family WHERE family_id=? AND owner_id=?", (family_id, owner_id)).fetchone()
-            member = conn.execute("SELECT role FROM valuesee_family_member WHERE family_id=? AND user_id=?", (family_id, user_id)).fetchone()
+            family = conn.execute("SELECT 1 FROM worthproof_family WHERE family_id=? AND owner_id=?", (family_id, owner_id)).fetchone()
+            member = conn.execute("SELECT role FROM worthproof_family_member WHERE family_id=? AND user_id=?", (family_id, user_id)).fetchone()
             if not family:
                 raise ValueError("只有家庭所有者可以管理成员")
             if not member or member["role"] == "owner":
                 raise ValueError("成员不存在或不能移除家庭所有者")
-            cursor = conn.execute("DELETE FROM valuesee_family_member WHERE family_id=? AND user_id=?", (family_id, user_id))
+            cursor = conn.execute("DELETE FROM worthproof_family_member WHERE family_id=? AND user_id=?", (family_id, user_id))
             return cursor.rowcount > 0
 
     def export_account(self, user_id: str) -> dict[str, Any]:
@@ -759,27 +759,27 @@ class AuthStore:
             "purchase_attachments": ("shopping_purchase_attachment", "user_id"),
             "price_protection_claims": ("shopping_price_protection_claim", "user_id"),
             "support_tickets": ("shopping_support_ticket", "user_id"),
-            "sessions": ("valuesee_session", "user_id"),
-            "subscriptions": ("valuesee_subscription", "user_id"),
-            "upgrade_requests": ("valuesee_upgrade_request", "user_id"),
-            "billing_orders": ("valuesee_billing_order", "user_id"),
-            "account_profile": ("valuesee_user_profile", "user_id"),
-            "account_audits": ("valuesee_user_audit", "user_id"),
+            "sessions": ("worthproof_session", "user_id"),
+            "subscriptions": ("worthproof_subscription", "user_id"),
+            "upgrade_requests": ("worthproof_upgrade_request", "user_id"),
+            "billing_orders": ("worthproof_billing_order", "user_id"),
+            "account_profile": ("worthproof_user_profile", "user_id"),
+            "account_audits": ("worthproof_user_audit", "user_id"),
             "monitor_preferences": ("shopping_monitor_preference", "user_id"),
             "budget_pools": ("shopping_budget_pool", "user_id"),
             "savings_ledger": ("shopping_savings_ledger", "user_id"),
         }
         with self._session() as conn:
             result = {"user": self.get_user(user_id), "families": [], "family_assets": [], "family_budgets": [], "family_invitations": [], "support_messages": [], "support_cases": [], **{key: [] for key in tables}}
-            result["families"] = [dict(row) for row in conn.execute("SELECT f.*,m.role FROM valuesee_family f JOIN valuesee_family_member m ON f.family_id=m.family_id WHERE m.user_id=?", (user_id,)).fetchall()]
+            result["families"] = [dict(row) for row in conn.execute("SELECT f.*,m.role FROM worthproof_family f JOIN worthproof_family_member m ON f.family_id=m.family_id WHERE m.user_id=?", (user_id,)).fetchall()]
             family_ids = [item["family_id"] for item in result["families"]]
             for family_id in family_ids:
-                result["family_assets"].extend(dict(row) for row in conn.execute("SELECT * FROM valuesee_family_asset WHERE family_id=?", (family_id,)).fetchall())
-                budget = conn.execute("SELECT * FROM valuesee_family_budget WHERE family_id=?", (family_id,)).fetchone()
+                result["family_assets"].extend(dict(row) for row in conn.execute("SELECT * FROM worthproof_family_asset WHERE family_id=?", (family_id,)).fetchall())
+                budget = conn.execute("SELECT * FROM worthproof_family_budget WHERE family_id=?", (family_id,)).fetchone()
                 if budget:
                     result["family_budgets"].append(dict(budget))
             user = result["user"] or {}
-            result["family_invitations"] = [dict(row) for row in conn.execute("SELECT * FROM valuesee_family_invitation WHERE inviter_id=? OR email=?", (user_id, user.get("email", ""))).fetchall()]
+            result["family_invitations"] = [dict(row) for row in conn.execute("SELECT * FROM worthproof_family_invitation WHERE inviter_id=? OR email=?", (user_id, user.get("email", ""))).fetchall()]
             for key, (table, column) in tables.items():
                 try:
                     result[key] = [dict(row) for row in conn.execute(f"SELECT * FROM {table} WHERE {column}=?", (user_id,)).fetchall()]
@@ -813,21 +813,21 @@ class AuthStore:
             "shopping_product_version", "shopping_price_anomaly",
             "shopping_share",
             "shopping_purchase_attachment", "shopping_price_protection_claim", "shopping_support_ticket",
-            "valuesee_session", "valuesee_subscription", "valuesee_upgrade_request", "valuesee_billing_order",
-            "valuesee_user_profile", "valuesee_user_audit", "valuesee_admin_mfa",
+            "worthproof_session", "worthproof_subscription", "worthproof_upgrade_request", "worthproof_billing_order",
+            "worthproof_user_profile", "worthproof_user_audit", "worthproof_admin_mfa",
             "shopping_monitor_preference", "shopping_budget_pool", "shopping_savings_ledger",
         )
         attachment_objects: list[tuple[str, str]] = []
         with self._session() as conn:
-            owned_family_ids = [row["family_id"] for row in conn.execute("SELECT family_id FROM valuesee_family WHERE owner_id=?", (user_id,)).fetchall()]
-            user_row = conn.execute("SELECT email FROM valuesee_user WHERE user_id=?", (user_id,)).fetchone()
+            owned_family_ids = [row["family_id"] for row in conn.execute("SELECT family_id FROM worthproof_family WHERE owner_id=?", (user_id,)).fetchall()]
+            user_row = conn.execute("SELECT email FROM worthproof_user WHERE user_id=?", (user_id,)).fetchone()
             try:
                 attachment_objects = [(str(row["storage_backend"]), str(row["storage_key"])) for row in conn.execute("SELECT storage_backend,storage_key FROM shopping_purchase_attachment WHERE user_id=?", (user_id,)).fetchall()]
             except Exception as exc:
                 if exc.__class__.__name__ != "OperationalError":
                     raise
             try:
-                avatar = conn.execute("SELECT avatar_backend,avatar_key FROM valuesee_user_profile WHERE user_id=? AND avatar_key IS NOT NULL", (user_id,)).fetchone()
+                avatar = conn.execute("SELECT avatar_backend,avatar_key FROM worthproof_user_profile WHERE user_id=? AND avatar_key IS NOT NULL", (user_id,)).fetchone()
                 if avatar:
                     attachment_objects.append((str(avatar["avatar_backend"]), str(avatar["avatar_key"])))
             except Exception as exc:
@@ -862,15 +862,15 @@ class AuthStore:
                         if exc.__class__.__name__ != "OperationalError":
                             raise
             for family_id in owned_family_ids:
-                conn.execute("DELETE FROM valuesee_family_asset WHERE family_id=?", (family_id,))
-                conn.execute("DELETE FROM valuesee_family_budget WHERE family_id=?", (family_id,))
-                conn.execute("DELETE FROM valuesee_family_invitation WHERE family_id=?", (family_id,))
-                conn.execute("DELETE FROM valuesee_family_member WHERE family_id=?", (family_id,))
-            conn.execute("DELETE FROM valuesee_family_invitation WHERE inviter_id=? OR email=?", (user_id, user_row["email"] if user_row else ""))
-            conn.execute("DELETE FROM valuesee_family_member WHERE user_id=?", (user_id,))
-            conn.execute("DELETE FROM valuesee_family WHERE owner_id=?", (user_id,))
-            conn.execute("DELETE FROM valuesee_auth_token WHERE user_id=?", (user_id,))
-            conn.execute("DELETE FROM valuesee_user WHERE user_id=?", (user_id,))
+                conn.execute("DELETE FROM worthproof_family_asset WHERE family_id=?", (family_id,))
+                conn.execute("DELETE FROM worthproof_family_budget WHERE family_id=?", (family_id,))
+                conn.execute("DELETE FROM worthproof_family_invitation WHERE family_id=?", (family_id,))
+                conn.execute("DELETE FROM worthproof_family_member WHERE family_id=?", (family_id,))
+            conn.execute("DELETE FROM worthproof_family_invitation WHERE inviter_id=? OR email=?", (user_id, user_row["email"] if user_row else ""))
+            conn.execute("DELETE FROM worthproof_family_member WHERE user_id=?", (user_id,))
+            conn.execute("DELETE FROM worthproof_family WHERE owner_id=?", (user_id,))
+            conn.execute("DELETE FROM worthproof_auth_token WHERE user_id=?", (user_id,))
+            conn.execute("DELETE FROM worthproof_user WHERE user_id=?", (user_id,))
         for backend, key in attachment_objects:
             delete_stored_object(backend, key)
 
@@ -893,7 +893,7 @@ def verify_password(password: str, encoded: str) -> bool:
 def _mfa_cipher():
     from cryptography.fernet import Fernet
 
-    configured = os.getenv("VALUSee_MFA_ENCRYPTION_KEY", "").strip()
+    configured = os.getenv("WORTHPROOF_MFA_ENCRYPTION_KEY", "").strip()
     key = configured.encode("ascii") if configured else base64.urlsafe_b64encode(hashlib.sha256(_jwt_secret() + b":admin-mfa").digest())
     return Fernet(key)
 
@@ -981,9 +981,9 @@ def bearer_subject(authorization: str | None, *, allow_local: bool = True) -> st
 
 
 def _jwt_secret() -> bytes:
-    secret = os.getenv("VALUSee_JWT_SECRET", "valuesee-dev-secret-change-before-production")
-    if os.getenv("APP_ENV", "dev").lower() in {"prod", "production"} and secret == "valuesee-dev-secret-change-before-production":
-        raise RuntimeError("生产环境必须配置 VALUSee_JWT_SECRET")
+    secret = os.getenv("WORTHPROOF_JWT_SECRET", "worthproof-dev-secret-change-before-production")
+    if os.getenv("APP_ENV", "dev").lower() in {"prod", "production"} and secret == "worthproof-dev-secret-change-before-production":
+        raise RuntimeError("生产环境必须配置 WORTHPROOF_JWT_SECRET")
     return secret.encode("utf-8")
 
 

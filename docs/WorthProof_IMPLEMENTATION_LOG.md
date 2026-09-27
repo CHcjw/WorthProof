@@ -1,10 +1,10 @@
-# ValuSee Implementation Log
+# WorthProof Implementation Log
 
 This document records product-facing work, verification, deployment decisions, and known release gaps. It is updated with each completed feature commit.
 
 ## Product contract
 
-ValuSee is an AI shopping decision and savings agent. Its user-facing loop is:
+WorthProof is an AI shopping decision and savings agent. Its user-facing loop is:
 
 ```text
 need -> product understanding -> SKU matching -> landed price -> risk -> personal fit
@@ -20,7 +20,7 @@ The first release focuses on digital products and small appliances. The system m
 - Consumer smart comparison now requires an authenticated user to save, enable, and successfully test a personal OpenAI-compatible LLM configuration before a shopping Agent task can be created.
 - The `/shopping/decide` server endpoint enforces the same rule with HTTP 428, so the requirement cannot be bypassed by calling the API directly. A configured platform key is never used as a fallback for consumer shopping decisions.
 - Saving a changed API key, Base URL, text model, vision model, or wire protocol clears the previous successful test state and requires a fresh connection test.
-- Online product-image recognition uses only the user's personal visual-model configuration. Without it, ValuSee keeps browser/local OCR and manual confirmation available but does not call the platform visual model.
+- Online product-image recognition uses only the user's personal visual-model configuration. Without it, WorthProof keeps browser/local OCR and manual confirmation available but does not call the platform visual model.
 - The consumer UI exposes the requirement before analysis, routes unconfigured users to login/settings, and distinguishes `尚未配置`, `等待测试`, and `连接可用` states.
 
 ### Productization and release hardening
@@ -30,7 +30,7 @@ The first release focuses on digital products and small appliances. The system m
 - Redis distributed rate limiting, RabbitMQ durable price events, S3/MinIO image storage, readiness probes, security headers, and trusted-host/CORS controls are wired.
 - Configurable official/affiliate commerce provider adapters and signed notification webhook delivery are available without pretending that unapproved platform credentials exist.
 - Account export, account deletion, family member invitation, privacy policy, and service terms endpoints are available.
-- Release and deployment acceptance criteria are recorded in `docs/VALUSee_PRODUCTION_RELEASE.md`.
+- Release and deployment acceptance criteria are recorded in `docs/WorthProof_PRODUCTION_RELEASE.md`.
 - Account security now includes single-use, expiring, SHA-256-hashed email-verification and password-reset tokens. Production sends links only by email; development may return a test token. Password-reset requests use a uniform response to prevent email-account enumeration.
 - Release observability now includes bounded-cardinality Prometheus HTTP counters/durations, production token protection for `/metrics`, database/Redis/RabbitMQ/object-storage readiness, RabbitMQ queue depth, and container health checks.
 - First-party product analytics accepts only an explicit event and metadata allowlist. Stable SHA-256 experiment assignment supports draft, scheduled running, paused, and completed experiments without collecting arbitrary client payloads.
@@ -44,8 +44,8 @@ The first release focuses on digital products and small appliances. The system m
 
 - Added `POST /api/v1/shopping/search`: configured official/affiliate adapters return source-bearing product records with platform, price/spec fields, and validated original URLs; no configured provider produces an explicit empty state instead of invented listings.
 - Added a user-facing real-source search panel with loading, source health, empty state, direct product links, and add-to-comparison actions.
-- Added `/admin` as a separate ValuSee Admin Console with protected overview, Agent task list, LLM Trace usage, commerce-source status, MCP status, and refresh controls.
-- Production admin access requires `VALUSee_ADMIN_EMAILS`; development keeps a local preview for verification.
+- Added `/admin` as a separate WorthProof Admin Console with protected overview, Agent task list, LLM Trace usage, commerce-source status, MCP status, and refresh controls.
+- Production admin access requires `WORTHPROOF_ADMIN_EMAILS`; development keeps a local preview for verification.
 - Admin Agent task rows now support detail drill-down into persisted task payloads/artifacts for operational debugging and review.
 - Added protected monitor operations for administrators: pause, resume, retry, expire, and delete. Each action validates the monitor state transition and writes an immutable action record with actor, reason, previous status, next status, and timestamp. This gives operations a recovery path when a commerce source or scheduled check fails.
 - Added an admin-owned canonical commerce catalog with product and SKU CRUD. Product records store normalized brand/model/category/specifications; SKU records store variants, source URLs, and status so matching can be corrected without changing raw marketplace observations.
@@ -115,7 +115,7 @@ Runtime branding no longer depends on loading the large PNG logo, wordmark, or m
 - Production LLM configuration now passes OpenAI-compatible credentials, default/per-Agent model selection, governed memory extraction, embeddings, and optional cost estimates into both API and worker containers. The image includes the actual `langchain-openai` adapter; an empty key remains an explicit fallback mode.
 - Production configuration is now consolidated into one private `.env.production` file and one tracked `.env.production.example` template. SMTP, signed notification relay, and authorized commerce adapter settings are forwarded by Compose; broad `.env.*` ignore rules prevent future local/staging credential files from being committed, while explicit `*.example` exceptions preserve safe templates.
 - The invitation-release acquisition path now works without commerce-platform authorization: supported user-submitted URLs use bounded cached public HTML/JSON-LD parsing with SSRF and redirect controls; incomplete/login/captcha pages fall back to extension capture, OCR, or manual confirmation. The consumer UI no longer presents whole-platform search as an initial capability.
-- Browser extension v0.4 connects to a real ValuSee account, extracts the currently visible SKU, selected variant, price, discounts, store, image, region, membership conditions and specifications, and provides an editable pre-send review. Its platform-aware collector ranks product-title candidates, rejects review/sales/navigation noise, prefers visible Taobao/Tmall after-coupon prices, avoids double-counting included discounts, and normalizes store metrics and selected-variant badges. A second Web confirmation is required before a price snapshot is persisted; snapshots retain SKU, confirmation status and evidence.
+- Browser extension v0.4 connects to a real WorthProof account, extracts the currently visible SKU, selected variant, price, discounts, store, image, region, membership conditions and specifications, and provides an editable pre-send review. Its platform-aware collector ranks product-title candidates, rejects review/sales/navigation noise, prefers visible Taobao/Tmall after-coupon prices, avoids double-counting included discounts, and normalizes store metrics and selected-variant badges. A second Web confirmation is required before a price snapshot is persisted; snapshots retain SKU, confirmation status and evidence.
 - Screenshot recognition now fuses the configured multimodal vision model with browser-side Chinese/English OCR instead of bypassing visual understanding whenever OCR returns text. Visual labels and selection state decide title, effective price and selected SKU; deterministic fallback prioritizes coupon/effective prices over original prices and rejects review/sales/navigation text. Browser extension v0.4.1 uses a new V4 protocol to replace stale collectors in already-open tabs and displays its active collector version with every capture.
 - LLM call traces now require an authenticated administrator session; production model errors and recognition context are no longer exposed through the legacy provider route.
 - Browser extension v0.4.2 adds Pinduoduo wholesale-page semantics: full visible titles override shortened document titles, goods IDs include `goodsId`/`gid`, wholesale and original price ranges remain auditable, the editable price is the explicitly labeled range minimum, and minimum order quantity plus available package variants are retained without pretending an unselected package is the active SKU.

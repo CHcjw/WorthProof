@@ -15,18 +15,18 @@ export async function sign(secret, timestamp) {
 }
 
 export async function runMonitor(env) {
-  if (!env.VALUSee_CRON_SECRET) {
-    throw new Error("VALUSee_CRON_SECRET is not configured");
+  if (!env.WORTHPROOF_CRON_SECRET) {
+    throw new Error("WORTHPROOF_CRON_SECRET is not configured");
   }
   const timestamp = Math.floor(Date.now() / 1000).toString();
-  const signature = await sign(env.VALUSee_CRON_SECRET, timestamp);
-  const apiOrigin = (env.API_ORIGIN || "https://api.valusee.com").replace(/\/$/, "");
+  const signature = await sign(env.WORTHPROOF_CRON_SECRET, timestamp);
+  const apiOrigin = (env.API_ORIGIN || "https://api.worthproof.com").replace(/\/$/, "");
   const response = await fetch(`${apiOrigin}${SIGNED_PATH}`, {
     method: "POST",
     headers: {
-      "X-ValuSee-Timestamp": timestamp,
-      "X-ValuSee-Signature": signature,
-      "User-Agent": "ValuSee-Monitor-Cron/1.0",
+      "X-WorthProof-Timestamp": timestamp,
+      "X-WorthProof-Signature": signature,
+      "User-Agent": "WorthProof-Monitor-Cron/1.0",
     },
   });
   const body = await response.text();
@@ -44,6 +44,6 @@ export default {
     if (new URL(request.url).pathname !== "/health") {
       return new Response("Not found", { status: 404 });
     }
-    return Response.json({ status: "ok", service: "valuesee-monitor-cron", configured: Boolean(env.VALUSee_CRON_SECRET) });
+    return Response.json({ status: "ok", service: "worthproof-monitor-cron", configured: Boolean(env.WORTHPROOF_CRON_SECRET) });
   },
 };

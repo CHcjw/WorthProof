@@ -6,7 +6,7 @@ type Item = Record<string, unknown>;
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
-  const token = localStorage.getItem('valuesee-token');
+  const token = localStorage.getItem('worthproof-token');
   if (token) headers.set('Authorization', `Bearer ${token}`);
   const response = await fetch(apiUrl(path), { ...init, headers });
   const body = await response.json().catch(() => ({}));

@@ -1,5 +1,5 @@
 [project]
-name = "valuesee"
+name = "worthproof"
 version = "0.1.0"
 description = "AI shopping decision and savings agent built with FastAPI and LangGraph."
 requires-python = ">=3.11"
@@ -40,7 +40,7 @@ ocr = [
 ]
 
 [project.scripts]
-valuesee-verify-backup = "app.core.backup_verification:main"
+worthproof-verify-backup = "app.core.backup_verification:main"
 
 [build-system]
 requires = ["setuptools>=68"]

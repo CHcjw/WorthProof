@@ -53,7 +53,7 @@ test.describe('shopping copilot page', () => {
                 title: `${query || '测试商品'} 旗舰款`,
                 platform: '京东',
                 url: 'https://item.jd.com/10001.html',
-                brand: 'ValuSee',
+                brand: 'WorthProof',
                 model: 'VS-27',
                 sku: 'VS27-01',
                 specs: { 尺寸: '27 英寸', 分辨率: '2560x1440' },
@@ -81,7 +81,7 @@ test.describe('shopping copilot page', () => {
 
     await page.goto('/?view=copilot');
     await expect(page.getByRole('heading', { name: '新的购物对话' })).toBeVisible();
-    await expect(page.locator('.copilot-message.assistant').filter({ hasText: '欢迎来到 ValuSee AI 导购' })).toBeVisible();
+    await expect(page.locator('.copilot-message.assistant').filter({ hasText: '欢迎来到 WorthProof AI 导购' })).toBeVisible();
 
     const composer = page.getByPlaceholder('例如：给我找一台适合代码办公的 27 英寸显示器，预算 2500 元');
     await composer.fill('帮我找一台适合代码办公的 27 英寸显示器，预算 2500 元');

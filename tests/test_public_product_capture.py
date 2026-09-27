@@ -154,7 +154,7 @@ def test_browser_extension_download_contains_installable_manifest() -> None:
 
     assert response.status_code == 200
     assert response.headers["content-type"] == "application/zip"
-    assert "valuesee-browser-extension.zip" in response.headers["content-disposition"]
+    assert "worthproof-browser-extension.zip" in response.headers["content-disposition"]
     with zipfile.ZipFile(BytesIO(response.content)) as archive:
         names = set(archive.namelist())
         assert {"manifest.json", "background.js", "content.js", "popup.html", "popup.js", "popup.css"} <= names
@@ -162,15 +162,15 @@ def test_browser_extension_download_contains_installable_manifest() -> None:
         assert manifest["manifest_version"] == 3
         assert manifest["version"] == "0.4.3"
         assert "scripting" in manifest["permissions"]
-        assert "https://api.valusee.com/*" in manifest["host_permissions"]
+        assert "https://api.worthproof.com/*" in manifest["host_permissions"]
         assert "https://*.yangkeduo.com/*" in manifest["host_permissions"]
         popup = archive.read("popup.js").decode("utf-8")
         content = archive.read("content.js").decode("utf-8")
         assert "/api/v1/auth/me" in popup
         assert "apiCandidatesFor" in popup
         assert "chrome.scripting.executeScript" in popup
-        assert "VALUSee_COLLECT_PRODUCT_V6" in popup
-        assert "VALUSee_COLLECT_PRODUCT_V6" in content
+        assert "WORTHPROOF_COLLECT_PRODUCT_V6" in popup
+        assert "WORTHPROOF_COLLECT_PRODUCT_V6" in content
         assert "collector_version: '0.4.3'" in content
 
 

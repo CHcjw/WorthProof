@@ -15,7 +15,7 @@ async function register(page: Page) {
   await page.getByLabel('确认密码').fill('E2e-password-2026');
   await page.getByRole('button', { name: '注册并登录' }).click();
   await expect(page).toHaveURL(/\/$/);
-  await expect.poll(() => page.evaluate(() => localStorage.getItem('valuesee-token'))).not.toBeNull();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('worthproof-token'))).not.toBeNull();
   return email;
 }
 
@@ -151,7 +151,7 @@ test('product acquisition exposes working link, extension, and screenshot paths'
     await page.getByRole('button', { name: '智能对比', exact: true }).click();
   }
   await page.getByRole('tab', { name: '商品录入' }).click();
-  await expect(page.getByRole('heading', { name: '把你正在纠结的商品交给 ValuSee' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '把你正在纠结的商品交给 WorthProof' })).toBeVisible();
 
   await page.getByRole('button', { name: /粘贴商品链接/ }).click();
   await expect(page.getByRole('textbox', { name: '粘贴淘宝、京东、拼多多商品链接' })).toBeFocused();
@@ -169,7 +169,7 @@ test('smart comparison requires a tested personal LLM key', async ({ page }, tes
   await expect(page.getByRole('button', { name: '配置个人 Key' })).toBeVisible();
   await expect(page.getByText('智能对比只使用你的个人 LLM Key')).toBeVisible();
   await page.getByRole('button', { name: '配置个人 Key' }).click();
-  await expect(page.getByRole('heading', { name: '登录 ValuSee' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '登录 WorthProof' })).toBeVisible();
 });
 
 test('shopping candidates survive refresh and report markdown renders as document structure', async ({ page }, testInfo) => {
@@ -180,8 +180,8 @@ test('shopping candidates survive refresh and report markdown renders as documen
     shipping: 0, gift_value: 0, condition: 'new', official_store: true, return_days: 7, warranty_months: 36, notes: '',
   };
   await page.addInitScript(({ draftProduct }) => {
-    localStorage.setItem('valuesee-shopping-draft:guest', JSON.stringify({ version: 1, goal: '比较 4K 显示器', budget: 2500, products: [draftProduct], updated_at: new Date().toISOString() }));
-    localStorage.setItem('valuesee-last-report', JSON.stringify({
+    localStorage.setItem('worthproof-shopping-draft:guest', JSON.stringify({ version: 1, goal: '比较 4K 显示器', budget: 2500, products: [draftProduct], updated_at: new Date().toISOString() }));
+    localStorage.setItem('worthproof-last-report', JSON.stringify({
       task_id: 'task-markdown', status: 'completed', events: [], result: {
         best_index: 0, recommendation: 'buy', recommendation_reason: '规格适合当前需求。', summary: '建议购买候选 1',
         comparison_rows: [{ index: 0, title: draftProduct.title, platform: draftProduct.platform, model: draftProduct.model, same_item_relation: 'same', same_item_confidence: 1, final_price: 1899, value_score: 90, risk_level: 'low', suitable_for_user: true }],

@@ -1,5 +1,5 @@
 let product = null;
-let config = { appUrl: 'https://valusee.com', apiUrl: '', accessToken: '', accountEmail: '' };
+let config = { appUrl: 'https://worthproof.com', apiUrl: '', accessToken: '', accountEmail: '' };
 const byId = (id) => document.getElementById(id);
 const supportedHosts = ['jd.com', 'taobao.com', 'tmall.com', 'pinduoduo.com', 'yangkeduo.com'];
 
@@ -18,7 +18,7 @@ function bindEvents() {
   byId('disconnect').addEventListener('click', disconnect);
   byId('capture').addEventListener('click', sendCapture);
   byId('retry').addEventListener('click', collectCurrentPage);
-  byId('open').addEventListener('click', () => chrome.runtime.sendMessage({ type: 'VALUSee_OPEN_APP' }));
+  byId('open').addEventListener('click', () => chrome.runtime.sendMessage({ type: 'WORTHPROOF_OPEN_APP' }));
 }
 
 async function connect() {
@@ -95,11 +95,11 @@ async function collectCurrentPage() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id || !isSupportedUrl(tab.url || '')) throw new Error('请打开京东、淘宝、天猫或拼多多商品详情页。');
-    let ready = await sendTabMessage(tab.id, { type: 'VALUSee_PING_V6' });
+    let ready = await sendTabMessage(tab.id, { type: 'WORTHPROOF_PING_V6' });
     if (!ready?.ok) {
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
     }
-    const response = await sendTabMessage(tab.id, { type: 'VALUSee_COLLECT_PRODUCT_V6' });
+    const response = await sendTabMessage(tab.id, { type: 'WORTHPROOF_COLLECT_PRODUCT_V6' });
     if (!response?.ok || !response.product) throw new Error(response?.error || '页面采集脚本未响应，请刷新商品页后重试。');
     product = response.product;
     fillEditor(product);
@@ -111,7 +111,7 @@ async function collectCurrentPage() {
     else setStatus('商品信息已识别，请核对当前规格、价格和优惠。');
   } catch (error) {
     byId('preview').textContent = error.message;
-    setStatus('可刷新商品页后重试；若平台隐藏字段，也可在 ValuSee 上传截图。', true);
+    setStatus('可刷新商品页后重试；若平台隐藏字段，也可在 WorthProof 上传截图。', true);
   } finally { setBusy('retry', false); }
 }
 
@@ -136,7 +136,7 @@ async function sendCapture() {
   if (!product) return setStatus('请先识别当前商品页。', true);
   if (!config.accessToken && !isLocalApp(config.appUrl)) {
     byId('settingsPanel').hidden = false;
-    setStatus('请先连接 ValuSee 账户。', true);
+    setStatus('请先连接 WorthProof 账户。', true);
     return;
   }
   product = {
@@ -166,7 +166,7 @@ async function sendCapture() {
       throw new Error(`会话已过期，请重新登录（${message}）`);
     }
     if (!response.ok) throw new Error(await responseMessage(response));
-    setStatus('已发送到 ValuSee，请在采集收件箱完成最终确认。');
+    setStatus('已发送到 WorthProof，请在采集收件箱完成最终确认。');
   } catch (error) { setStatus(`发送失败：${error.message}`, true); }
   finally { setBusy('capture', false); }
 }
@@ -190,7 +190,7 @@ function isSupportedUrl(value) {
 function apiCandidatesFor(appUrl, preferred = config.apiUrl) {
   const origin = normalizedAppUrl(appUrl);
   const host = new URL(origin).hostname.toLowerCase();
-  const values = host === 'valusee.com' || host === 'www.valusee.com' ? [preferred, 'https://api.valusee.com', origin] : [preferred, origin];
+  const values = host === 'worthproof.com' || host === 'www.worthproof.com' ? [preferred, 'https://api.worthproof.com', origin] : [preferred, origin];
   return values.filter((value, index) => value && values.indexOf(value) === index);
 }
 
@@ -204,7 +204,7 @@ async function fetchApi(path, options, appUrl = config.appUrl, preferred = confi
       lastError = new Error(`HTTP ${response.status}`);
     } catch (error) { lastError = error; }
   }
-  throw lastError || new Error('ValuSee API 暂时无法连接');
+  throw lastError || new Error('WorthProof API 暂时无法连接');
 }
 
 function normalizedAppUrl(value) {

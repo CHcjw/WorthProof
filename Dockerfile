@@ -10,15 +10,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-chi-sim curl \
     && rm -rf /var/lib/apt/lists/* \
-    && useradd --create-home --uid 10001 valuesee
+    && useradd --create-home --uid 10001 worthproof
 COPY pyproject.toml README.md LICENSE ./
 COPY app ./app
 COPY extension ./extension
 COPY --from=web-builder /build/web/dist ./web/dist
 RUN pip install --no-cache-dir ".[ocr,llm]" \
     && mkdir -p /app/data/uploads \
-    && chown -R valuesee:valuesee /app
-USER valuesee
+    && chown -R worthproof:worthproof /app
+USER worthproof
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 CMD curl -fsS http://127.0.0.1:8000/health || exit 1
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]

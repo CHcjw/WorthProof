@@ -154,22 +154,22 @@ from app.schemas.studio import (
     WorkflowValidateResponse,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["ValuSee"])
+router = APIRouter(prefix="/api/v1", tags=["WorthProof"])
 
 
 @router.post("/internal/monitor/run", tags=["Operations"], include_in_schema=False)
 def run_scheduled_monitor(
     request: Request,
-    x_valuesee_timestamp: str | None = Header(default=None, alias="X-ValuSee-Timestamp"),
-    x_valuesee_signature: str | None = Header(default=None, alias="X-ValuSee-Signature"),
+    x_worthproof_timestamp: str | None = Header(default=None, alias="X-WorthProof-Timestamp"),
+    x_worthproof_signature: str | None = Header(default=None, alias="X-WorthProof-Signature"),
 ) -> dict[str, object]:
-    secret = os.getenv("VALUSee_CRON_SECRET", "").strip()
+    secret = os.getenv("WORTHPROOF_CRON_SECRET", "").strip()
     if not secret:
         raise HTTPException(status_code=503, detail="scheduled monitor is not configured")
     if not verify_cron_signature(
         secret,
-        x_valuesee_timestamp or "",
-        x_valuesee_signature or "",
+        x_worthproof_timestamp or "",
+        x_worthproof_signature or "",
         request.method,
         request.url.path,
     ):
@@ -192,7 +192,7 @@ def download_browser_extension() -> StreamingResponse:
     return StreamingResponse(
         archive,
         media_type="application/zip",
-        headers={"Content-Disposition": 'attachment; filename="valuesee-browser-extension.zip"', "Cache-Control": "no-store"},
+        headers={"Content-Disposition": 'attachment; filename="worthproof-browser-extension.zip"', "Cache-Control": "no-store"},
     )
 
 
@@ -211,7 +211,7 @@ def _require_admin(authorization: str | None) -> str:
     if subject == "local-user" and settings.app_env.lower() not in {"prod", "production"}:
         return subject
     user = auth_store.get_user(subject)
-    allowed = {item.strip().lower() for item in os.getenv("VALUSee_ADMIN_EMAILS", "").split(",") if item.strip()}
+    allowed = {item.strip().lower() for item in os.getenv("WORTHPROOF_ADMIN_EMAILS", "").split(",") if item.strip()}
     if not user or user.get("email", "").lower() not in allowed:
         raise HTTPException(status_code=403, detail="需要管理员账户")
     token = _raw_bearer(authorization)
@@ -278,7 +278,7 @@ def request_registration_code(request_body: RegistrationCodeRequest) -> dict[str
         raise HTTPException(status_code=429, detail=str(exc)) from exc
     delivered = send_transactional_email(
         request_body.email.strip().lower(),
-        "ValuSee 注册验证码",
+        "WorthProof 注册验证码",
         f"你的注册验证码是：{code}\n\n验证码 10 分钟内有效，请勿转发给任何人。",
     )
     if not delivered and settings.app_env.lower() in {"prod", "production"}:
@@ -326,7 +326,7 @@ def login_account(request_body: LoginRequest, request: Request) -> dict[str, obj
     user = auth_store.authenticate(request_body.email, request_body.password)
     if not user:
         raise HTTPException(status_code=401, detail="邮箱或密码错误")
-    allowed = {item.strip().lower() for item in os.getenv("VALUSee_ADMIN_EMAILS", "").split(",") if item.strip()}
+    allowed = {item.strip().lower() for item in os.getenv("WORTHPROOF_ADMIN_EMAILS", "").split(",") if item.strip()}
     mfa_required = str(user["email"]).lower() in allowed and auth_store.admin_mfa_status(str(user["user_id"]))["enabled"]
     if mfa_required and not auth_store.verify_admin_mfa(str(user["user_id"]), request_body.mfa_code):
         raise HTTPException(status_code=401, detail="请输入有效的管理员动态验证码或恢复码")
@@ -341,8 +341,8 @@ def request_email_verification(authorization: str | None = Header(default=None))
     if not user:
         raise HTTPException(status_code=404, detail="账户不存在")
     token = auth_store.create_action_token(user_id, "verify_email", ttl_minutes=1440)
-    base_url = os.getenv("VALUSee_PUBLIC_BASE_URL", "http://127.0.0.1:8200").rstrip("/")
-    send_transactional_email(user["email"], "验证你的 ValuSee 邮箱", f"请在 24 小时内打开：{base_url}/?verify_token={token}")
+    base_url = os.getenv("WORTHPROOF_PUBLIC_BASE_URL", "http://127.0.0.1:8200").rstrip("/")
+    send_transactional_email(user["email"], "验证你的 WorthProof 邮箱", f"请在 24 小时内打开：{base_url}/?verify_token={token}")
     return {"accepted": True, **({"verification_token": token} if settings.app_env.lower() not in {"prod", "production"} else {})}
 
 
@@ -360,10 +360,10 @@ def request_password_reset(request: PasswordResetRequest) -> dict[str, object]:
     response: dict[str, object] = {"accepted": True, "message": "如果该邮箱已注册，重置邮件将发送到该邮箱。"}
     if user:
         token = auth_store.create_action_token(user["user_id"], "reset_password", ttl_minutes=30)
-        base_url = os.getenv("VALUSee_PUBLIC_BASE_URL", "http://127.0.0.1:8200").rstrip("/")
+        base_url = os.getenv("WORTHPROOF_PUBLIC_BASE_URL", "http://127.0.0.1:8200").rstrip("/")
         delivered = send_transactional_email(
             user["email"],
-            "重置 ValuSee 密码",
+            "重置 WorthProof 密码",
             f"请在 30 分钟内打开以下链接重置密码：\n\n{base_url}/?reset_token={token}",
         )
         if not delivered:
@@ -1004,7 +1004,7 @@ def admin_overview(authorization: str | None = Header(default=None)) -> dict[str
     benchmarks = task_store.list_benchmark_runs(limit=10)
     usage = llm_provider.usage_dashboard(limit=500)
     return {
-        "product": "ValuSee / 见值",
+        "product": "WorthProof / 见值",
         "health": {"tasks": len(tasks), "running_tasks": sum(1 for item in tasks if item.get("status") in {"running", "queued"}), "monitors": len(monitors), "active_monitors": sum(1 for item in monitors if item.get("status") in {"watching", "target_reached"}), "traces": len(traces), "benchmarks": len(benchmarks)},
         "tasks": tasks[:20],
         "monitors": monitors[:20],
@@ -1701,7 +1701,7 @@ def delete_shopping_comparison(comparison_id: str, authorization: str | None = H
 @router.post("/shopping/shares", tags=["Shopping Sharing"])
 def create_shopping_share(payload: dict[str, object], authorization: str | None = Header(default=None)) -> dict[str, object]:
     try:
-        share = shopping_store.create_share(_request_user(authorization), str(payload.get("share_type") or "comparison"), str(payload.get("title") or "ValuSee 分享"), payload.get("payload") if isinstance(payload.get("payload"), dict) else {}, int(payload.get("expires_days") or 30))
+        share = shopping_store.create_share(_request_user(authorization), str(payload.get("share_type") or "comparison"), str(payload.get("title") or "WorthProof 分享"), payload.get("payload") if isinstance(payload.get("payload"), dict) else {}, int(payload.get("expires_days") or 30))
     except (TypeError, ValueError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return {**share, "share_url": f"/share/{share['share_token']}"}
@@ -1937,7 +1937,7 @@ def save_price_protection_claim(purchase_id: str, payload: dict[str, object], au
 def export_purchase_calendar(authorization: str | None = Header(default=None)) -> PlainTextResponse:
     def escape(value: object) -> str:
         return str(value or "").replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
-    lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ValuSee//Shopping Calendar//ZH-CN", "CALSCALE:GREGORIAN"]
+    lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//WorthProof//Shopping Calendar//ZH-CN", "CALSCALE:GREGORIAN"]
     labels = {"price_protection_deadline": "保价截止", "return_deadline": "退货截止", "warranty_deadline": "保修到期", "consumable_reminder_at": "耗材更换"}
     for purchase in shopping_store.list_purchases(_request_user(authorization)):
         title = purchase.get("product", {}).get("title") or "已购商品"
@@ -1946,9 +1946,9 @@ def export_purchase_calendar(authorization: str | None = Header(default=None)) -
             if not value:
                 continue
             day = str(value)[:10].replace("-", "")
-            lines.extend(["BEGIN:VEVENT", f"UID:{purchase['purchase_id']}-{field}@valuesee", f"DTSTART;VALUE=DATE:{day}", f"SUMMARY:{escape(label)} · {escape(title)}", f"DESCRIPTION:{escape(purchase.get('platform'))} | ValuSee 购后提醒", "END:VEVENT"])
+            lines.extend(["BEGIN:VEVENT", f"UID:{purchase['purchase_id']}-{field}@worthproof", f"DTSTART;VALUE=DATE:{day}", f"SUMMARY:{escape(label)} · {escape(title)}", f"DESCRIPTION:{escape(purchase.get('platform'))} | WorthProof 购后提醒", "END:VEVENT"])
     lines.append("END:VCALENDAR")
-    return PlainTextResponse("\r\n".join(lines) + "\r\n", media_type="text/calendar", headers={"Content-Disposition": 'attachment; filename="valuesee-shopping.ics"'})
+    return PlainTextResponse("\r\n".join(lines) + "\r\n", media_type="text/calendar", headers={"Content-Disposition": 'attachment; filename="worthproof-shopping.ics"'})
 
 
 @router.get("/shopping/attachments/{attachment_id}/download", tags=["Shopping Purchase"])
@@ -2655,7 +2655,7 @@ def run_llm_prompt_ab_test(payload: dict[str, object]) -> dict[str, object]:
         prompt_b=prompt_b,
         system_prompt=str(
             payload.get("system_prompt")
-            or "你是 ValuSee 的 Prompt A/B 测试执行器。请基于输入给出结构清晰、可验证、可行动的中文回答。"
+            or "你是 WorthProof 的 Prompt A/B 测试执行器。请基于输入给出结构清晰、可验证、可行动的中文回答。"
         ).strip(),
         user_prompt=user_prompt,
         fallback=str(payload.get("fallback") or "LLM 未配置或调用失败，返回 fallback。").strip(),
@@ -3501,7 +3501,7 @@ def _answer_from_task_context(
         "sources": sources[:5],
     }
     return llm_provider.generate_with_status(
-        "你是 ValuSee 的项目追问助手。请只基于任务报告、事件和给定知识来源回答，不要编造未出现的事实。",
+        "你是 WorthProof 的项目追问助手。请只基于任务报告、事件和给定知识来源回答，不要编造未出现的事实。",
         (
             "请用中文 Markdown 回答用户问题，结构要清楚，并在信息不足时说明还需要哪个 Agent 输出。\n"
             f"上下文：{facts}"
@@ -3612,7 +3612,7 @@ def _learning_reply(request: LearningChatRequest, task: dict[str, object] | None
     task_context = {"task": task, "learning_stage": stage}
     request = request.model_copy(update={"question": f"{request.question}\nTask context: {task_context}"})
     return llm_provider.generate_with_status(
-        "你是 ValuSee 的学习陪练 Agent。请根据用户回答进行启发式追问、纠错和学习路径引导。",
+        "你是 WorthProof 的学习陪练 Agent。请根据用户回答进行启发式追问、纠错和学习路径引导。",
         (
             "请输出中文，语气像教练，不要直接给长篇标准答案。"
             "先反馈用户回答，再给一个下一步挑战。\n"
@@ -3665,7 +3665,7 @@ def _learning_next_questions(request: LearningChatRequest, task: dict[str, objec
     task_context = {"task": task, "learning_stage": stage}
     request = request.model_copy(update={"answer": f"{request.answer}\nTask context: {task_context}"})
     result = llm_provider.generate_with_status(
-        "你是 ValuSee 的学习陪练 Agent。请基于当前项目任务和用户回答，生成 3 个递进式追问。",
+        "你是 WorthProof 的学习陪练 Agent。请基于当前项目任务和用户回答，生成 3 个递进式追问。",
         (
             "只输出 3 行，每行一个问题，不要编号，不要解释。\n"
             f"主题：{request.topic}\n任务：{task}\n用户回答：{request.answer}\n轮次：{request.turn}"

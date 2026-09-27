@@ -21,7 +21,7 @@ class FakeChannel:
 
 
 def test_monitor_queue_topology_has_retry_and_dead_letter_routes(monkeypatch):
-    monkeypatch.setenv("VALUSee_QUEUE_RETRY_DELAY_MS", "45000")
+    monkeypatch.setenv("WORTHPROOF_QUEUE_RETRY_DELAY_MS", "45000")
     channel = FakeChannel()
     declare_monitor_queues(channel)
 
@@ -68,7 +68,7 @@ class ConsumerChannel(FakeChannel):
 
 def queue_message(tag: int, payload: object, retries: int = 0):
     method = SimpleNamespace(delivery_tag=tag)
-    properties = SimpleNamespace(headers={"x-valuesee-retries": retries}, message_id=f"message-{tag}")
+    properties = SimpleNamespace(headers={"x-worthproof-retries": retries}, message_id=f"message-{tag}")
     return method, properties, json.dumps(payload).encode("utf-8")
 
 
@@ -105,7 +105,7 @@ def test_consumer_retries_transient_failure_then_dead_letters_after_limit(monkey
         queue_message(4, {"type": "price_snapshot", "snapshot_id": "snap-dead"}, retries=5),
     ])
     install_fake_pika(monkeypatch, channel)
-    monkeypatch.setenv("VALUSee_QUEUE_MAX_RETRIES", "5")
+    monkeypatch.setenv("WORTHPROOF_QUEUE_MAX_RETRIES", "5")
 
     def fail(_payload):
         raise RuntimeError("temporary dependency failure")
@@ -114,12 +114,12 @@ def test_consumer_retries_transient_failure_then_dead_letters_after_limit(monkey
 
     assert channel.acked == [3, 4]
     assert [item["routing_key"] for item in channel.published] == [MONITOR_RETRY_QUEUE, MONITOR_DEAD_QUEUE]
-    assert channel.published[0]["properties"].headers["x-valuesee-retries"] == 2
+    assert channel.published[0]["properties"].headers["x-worthproof-retries"] == 2
     assert result == {"consumed": 0, "retried": 1, "dead_lettered": 1}
 
 
 def test_worker_heartbeat_is_written_to_configured_path(monkeypatch, tmp_path):
     heartbeat = tmp_path / "worker" / "heartbeat"
-    monkeypatch.setenv("VALUSee_WORKER_HEARTBEAT_PATH", str(heartbeat))
+    monkeypatch.setenv("WORTHPROOF_WORKER_HEARTBEAT_PATH", str(heartbeat))
     write_heartbeat()
     assert heartbeat.is_file()

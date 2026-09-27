@@ -1,6 +1,6 @@
 {
-  "name": "ValuSee AI 购物决策助手",
-  "short_name": "ValuSee",
+  "name": "WorthProof AI 购物决策助手",
+  "short_name": "WorthProof",
   "description": "识别同款、核算到手价、判断是否值得买，并持续管理降价与售后提醒。",
   "start_url": "/",
   "scope": "/",

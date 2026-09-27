@@ -1,16 +1,16 @@
-name: valuesee-worker
+name: worthproof-worker
 
 services:
   monitor-worker:
     build: .
-    image: valuesee-monitor-worker:latest
+    image: worthproof-monitor-worker:latest
     command: ["python", "-m", "app.shopping.worker"]
     restart: unless-stopped
     env_file:
       - ${WORKER_ENV_FILE:-.env.worker}
     environment:
       APP_ENV: production
-      VALUSee_WORKER_HEARTBEAT_PATH: /tmp/valuesee-worker-heartbeat
+      WORTHPROOF_WORKER_HEARTBEAT_PATH: /tmp/worthproof-worker-heartbeat
     read_only: true
     tmpfs:
       - /tmp:size=64m,mode=1777
@@ -19,7 +19,7 @@ services:
     cap_drop:
       - ALL
     healthcheck:
-      test: ["CMD", "python", "-c", "import os,time,sys; p='/tmp/valuesee-worker-heartbeat'; sys.exit(0 if os.path.exists(p) and time.time()-os.path.getmtime(p)<180 else 1)"]
+      test: ["CMD", "python", "-c", "import os,time,sys; p='/tmp/worthproof-worker-heartbeat'; sys.exit(0 if os.path.exists(p) and time.time()-os.path.getmtime(p)<180 else 1)"]
       interval: 30s
       timeout: 5s
       start_period: 90s

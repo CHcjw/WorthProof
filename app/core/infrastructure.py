@@ -8,13 +8,13 @@ from collections import defaultdict, deque
 from typing import Any
 
 
-MONITOR_QUEUE = "valuesee.price-events"
-MONITOR_RETRY_QUEUE = "valuesee.price-events.retry"
-MONITOR_DEAD_QUEUE = "valuesee.price-events.dead"
+MONITOR_QUEUE = "worthproof.price-events"
+MONITOR_RETRY_QUEUE = "worthproof.price-events.retry"
+MONITOR_DEAD_QUEUE = "worthproof.price-events.dead"
 
 
 def declare_monitor_queues(channel: Any) -> None:
-    retry_ms = max(1_000, int(os.getenv("VALUSee_QUEUE_RETRY_DELAY_MS", "30000")))
+    retry_ms = max(1_000, int(os.getenv("WORTHPROOF_QUEUE_RETRY_DELAY_MS", "30000")))
     channel.queue_declare(queue=MONITOR_DEAD_QUEUE, durable=True)
     channel.queue_declare(
         queue=MONITOR_RETRY_QUEUE,
@@ -47,7 +47,7 @@ class RateLimiter:
                 import redis
 
                 client = redis.Redis.from_url(redis_url, socket_timeout=1)
-                bucket = f"valuesee:rate:{key}:{int(time.time()) // window_seconds}"
+                bucket = f"worthproof:rate:{key}:{int(time.time()) // window_seconds}"
                 count = client.incr(bucket)
                 if count == 1:
                     client.expire(bucket, window_seconds + 1)
@@ -87,31 +87,31 @@ class HttpMetrics:
                     self._buckets[(method, route, bucket)] += 1
 
     def prometheus(self) -> str:
-        lines = ["# HELP valuesee_http_requests_total HTTP requests by route and status", "# TYPE valuesee_http_requests_total counter"]
+        lines = ["# HELP worthproof_http_requests_total HTTP requests by route and status", "# TYPE worthproof_http_requests_total counter"]
         with self._lock:
             for (method, route, status), value in sorted(self._requests.items()):
-                lines.append(f'valuesee_http_requests_total{{method="{method}",route="{route}",status="{status}"}} {value}')
-            lines.extend(["# HELP valuesee_http_request_duration_seconds Request duration histogram", "# TYPE valuesee_http_request_duration_seconds histogram"])
+                lines.append(f'worthproof_http_requests_total{{method="{method}",route="{route}",status="{status}"}} {value}')
+            lines.extend(["# HELP worthproof_http_request_duration_seconds Request duration histogram", "# TYPE worthproof_http_request_duration_seconds histogram"])
             for (method, route), (count, total) in sorted(self._duration.items()):
                 labels = f'method="{method}",route="{route}"'
                 for bucket in self.BUCKETS:
                     value = self._buckets.get((method, route, bucket), 0)
-                    lines.append(f'valuesee_http_request_duration_seconds_bucket{{{labels},le="{bucket:g}"}} {value}')
-                lines.append(f'valuesee_http_request_duration_seconds_bucket{{{labels},le="+Inf"}} {count}')
-                lines.append(f"valuesee_http_request_duration_seconds_sum{{{labels}}} {total:.6f}")
-                lines.append(f"valuesee_http_request_duration_seconds_count{{{labels}}} {count}")
+                    lines.append(f'worthproof_http_request_duration_seconds_bucket{{{labels},le="{bucket:g}"}} {value}')
+                lines.append(f'worthproof_http_request_duration_seconds_bucket{{{labels},le="+Inf"}} {count}')
+                lines.append(f"worthproof_http_request_duration_seconds_sum{{{labels}}} {total:.6f}")
+                lines.append(f"worthproof_http_request_duration_seconds_count{{{labels}}} {count}")
         return "\n".join(lines) + "\n"
 
 
 def infrastructure_prometheus() -> str:
     checks = infrastructure_health()
-    lines = ["# HELP valuesee_dependency_up Whether a configured dependency is healthy", "# TYPE valuesee_dependency_up gauge"]
+    lines = ["# HELP worthproof_dependency_up Whether a configured dependency is healthy", "# TYPE worthproof_dependency_up gauge"]
     for name, detail in sorted(checks.items()):
-        lines.append(f'valuesee_dependency_up{{dependency="{name}"}} {1 if detail.get("status") == "ok" else 0}')
+        lines.append(f'worthproof_dependency_up{{dependency="{name}"}} {1 if detail.get("status") == "ok" else 0}')
     rabbitmq = checks.get("rabbitmq", {})
-    lines.extend(["# HELP valuesee_queue_messages RabbitMQ messages by queue state", "# TYPE valuesee_queue_messages gauge"])
+    lines.extend(["# HELP worthproof_queue_messages RabbitMQ messages by queue state", "# TYPE worthproof_queue_messages gauge"])
     for state, key in (("ready", "queue_depth"), ("retry", "retry_depth"), ("dead", "dead_letter_depth")):
-        lines.append(f'valuesee_queue_messages{{state="{state}"}} {int(rabbitmq.get(key, 0))}')
+        lines.append(f'worthproof_queue_messages{{state="{state}"}} {int(rabbitmq.get(key, 0))}')
     return "\n".join(lines) + "\n"
 
 
@@ -182,7 +182,7 @@ def infrastructure_health() -> dict[str, dict[str, Any]]:
             import boto3
 
             client = boto3.client("s3", endpoint_url=endpoint, aws_access_key_id=os.getenv("S3_ACCESS_KEY"), aws_secret_access_key=os.getenv("S3_SECRET_KEY"), region_name=os.getenv("S3_REGION", "us-east-1"))
-            client.head_bucket(Bucket=bucket or "valuesee-uploads")
+            client.head_bucket(Bucket=bucket or "worthproof-uploads")
             checks["object_storage"] = {"status": "ok"}
         except Exception as exc:
             checks["object_storage"] = {"status": "error", "detail": type(exc).__name__}

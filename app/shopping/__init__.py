@@ -1,2 +1,2 @@
-"""ValuSee shopping decision package."""
+"""WorthProof shopping decision package."""
 

@@ -79,7 +79,7 @@ def test_pdd_signature_is_sorted_uppercase_and_does_not_send_secret(monkeypatch:
     assert "secret" not in "".join(params.values())
 
 
-def test_pdd_search_maps_official_goods_to_valuesee_product(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_pdd_search_maps_official_goods_to_worthproof_product(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[dict[str, str]] = []
 
     def fake_urlopen(request: object, timeout: int) -> FakeResponse:
@@ -249,7 +249,7 @@ def test_pdd_60001_has_actionable_sanitized_message(monkeypatch: pytest.MonkeyPa
 
 
 def test_configured_providers_enables_pdd_only_with_complete_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("VALUSee_COMMERCE_PROVIDERS", "[]")
+    monkeypatch.setenv("WORTHPROOF_COMMERCE_PROVIDERS", "[]")
     monkeypatch.setenv("PDD_CLIENT_ID", "client")
     monkeypatch.delenv("PDD_CLIENT_SECRET", raising=False)
     assert "pdd" not in providers.configured_providers()
@@ -266,7 +266,7 @@ def test_configured_providers_enables_pdd_only_with_complete_credentials(monkeyp
 
 
 def test_provider_status_reports_missing_pdd_promotion_identity(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("VALUSee_COMMERCE_PROVIDERS", "[]")
+    monkeypatch.setenv("WORTHPROOF_COMMERCE_PROVIDERS", "[]")
     monkeypatch.setenv("PDD_CLIENT_ID", "client")
     monkeypatch.setenv("PDD_CLIENT_SECRET", "secret")
     monkeypatch.delenv("PDD_PID", raising=False)

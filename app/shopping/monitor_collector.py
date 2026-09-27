@@ -20,7 +20,7 @@ def collect_public_monitor_updates(
 ) -> dict[str, int]:
     current_time = now or datetime.now(timezone.utc)
     check_limit = (
-        max_checks if max_checks is not None else int(os.getenv("VALUSee_MONITOR_BATCH_SIZE", "5"))
+        max_checks if max_checks is not None else int(os.getenv("WORTHPROOF_MONITOR_BATCH_SIZE", "5"))
     )
     check_limit = min(20, max(1, check_limit))
     counts = {
@@ -65,7 +65,7 @@ def collect_public_monitor_updates(
                 user_id=monitor["user_id"],
                 kind="recapture_required",
                 title=f"{monitor['product'].get('title', '关注商品')} 需要重新采集",
-                message="公开页面未返回可确认价格。请打开商品页，用 ValuSee 扩展重新读取当前 SKU、地区和会员优惠。",
+                message="公开页面未返回可确认价格。请打开商品页，用 WorthProof 扩展重新读取当前 SKU、地区和会员优惠。",
                 idempotency_key=f"recapture:{monitor['monitor_id']}:{current_time.date().isoformat()}",
             )
             counts["recapture_reminders"] += 1 if created else 0

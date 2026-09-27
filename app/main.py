@@ -23,7 +23,7 @@ from app.shopping.store import shopping_store
 
 validate_production_config()
 app = FastAPI(title=settings.app_name, version="0.1.0")
-request_logger = logging.getLogger("valuesee.http")
+request_logger = logging.getLogger("worthproof.http")
 
 allowed_origins = [item.strip() for item in os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if item.strip()]
 app.add_middleware(
@@ -81,7 +81,7 @@ def health() -> dict[str, str]:
 
 @app.get("/metrics", include_in_schema=False)
 def metrics(request: Request) -> PlainTextResponse:
-    expected = os.getenv("VALUSee_METRICS_TOKEN", "")
+    expected = os.getenv("WORTHPROOF_METRICS_TOKEN", "")
     if settings.app_env.lower() in {"prod", "production"} and (not expected or not secrets.compare_digest(request.headers.get("x-metrics-token", ""), expected)):
         return PlainTextResponse("forbidden\n", status_code=403)
     return PlainTextResponse(http_metrics.prometheus() + infrastructure_prometheus(), media_type="text/plain; version=0.0.4")
@@ -89,12 +89,12 @@ def metrics(request: Request) -> PlainTextResponse:
 
 @app.get("/privacy", include_in_schema=False)
 def privacy_policy() -> dict[str, object]:
-    return {"title": "ValuSee 隐私政策", "version": "2026-08-09", "summary": "ValuSee 仅处理用户主动提交的商品信息、账户信息和用户创建的提醒；不以大规模后台爬虫作为数据来源。用户可通过账户接口导出或删除数据。", "contact": os.getenv("VALUSee_PRIVACY_CONTACT", "请在部署前配置客服邮箱")}
+    return {"title": "WorthProof 隐私政策", "version": "2026-08-09", "summary": "WorthProof 仅处理用户主动提交的商品信息、账户信息和用户创建的提醒；不以大规模后台爬虫作为数据来源。用户可通过账户接口导出或删除数据。", "contact": os.getenv("WORTHPROOF_PRIVACY_CONTACT", "请在部署前配置客服邮箱")}
 
 
 @app.get("/terms", include_in_schema=False)
 def service_terms() -> dict[str, object]:
-    return {"title": "ValuSee 用户服务协议", "version": "2026-08-09", "summary": "价格、优惠、风险和时机建议仅基于已获得的来源证据，不保证实时性或成交结果；下单、支付、退款和售后操作必须由用户确认并在平台完成。"}
+    return {"title": "WorthProof 用户服务协议", "version": "2026-08-09", "summary": "价格、优惠、风险和时机建议仅基于已获得的来源证据，不保证实时性或成交结果；下单、支付、退款和售后操作必须由用户确认并在平台完成。"}
 
 
 @app.get("/ready")
@@ -117,11 +117,11 @@ def _web_document() -> str:
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>ValuSee - 买之前，先看清价值</title>
-  <meta property="og:title" content="ValuSee - 买之前，先看清价值" />
+  <title>WorthProof - 买之前，先看清价值</title>
+  <meta property="og:title" content="WorthProof - 买之前，先看清价值" />
   <meta property="og:description" content="识别真假同款、算清真实到手价，并持续管理降价与售后。" />
 </head>
-<body><main id="root">ValuSee</main></body>
+<body><main id="root">WorthProof</main></body>
 </html>"""
 
 
@@ -175,11 +175,11 @@ def content_index(content_id: str) -> HTMLResponse:
     title = html.escape(str(item["title"]), quote=True)
     description = html.escape(str(item["summary"]), quote=True)
     document = document.replace(
-        "<title>ValuSee - 买之前，先看清价值</title>",
-        f"<title>{title} - ValuSee</title>",
+        "<title>WorthProof - 买之前，先看清价值</title>",
+        f"<title>{title} - WorthProof</title>",
     )
     document = document.replace(
-        '<meta property="og:title" content="ValuSee - 买之前，先看清价值" />',
+        '<meta property="og:title" content="WorthProof - 买之前，先看清价值" />',
         f'<meta property="og:title" content="{title}" />',
     )
     document = document.replace(
@@ -195,17 +195,17 @@ def shared_decision_index(share_token: str) -> HTMLResponse:
     document = _web_document()
     if not share:
         return HTMLResponse(document, status_code=404)
-    title = html.escape(str(share.get("title") or "ValuSee 购物决策分享"), quote=True)
+    title = html.escape(str(share.get("title") or "WorthProof 购物决策分享"), quote=True)
     description = html.escape(
-        "ValuSee 公开只读购物决策快照，价格与优惠请在下单前回到原平台核验。",
+        "WorthProof 公开只读购物决策快照，价格与优惠请在下单前回到原平台核验。",
         quote=True,
     )
     document = document.replace(
-        "<title>ValuSee - 买之前，先看清价值</title>",
-        f"<title>{title} - ValuSee</title>",
+        "<title>WorthProof - 买之前，先看清价值</title>",
+        f"<title>{title} - WorthProof</title>",
     )
     document = document.replace(
-        '<meta property="og:title" content="ValuSee - 买之前，先看清价值" />',
+        '<meta property="og:title" content="WorthProof - 买之前，先看清价值" />',
         f'<meta property="og:title" content="{title}" />',
     )
     document = document.replace(

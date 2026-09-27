@@ -143,7 +143,7 @@ def test_admin_api_requires_mfa_after_enrollment(monkeypatch, tmp_path):
     store = AuthStore(tmp_path / "admin-mfa.db")
     user = store.register("mfa-admin@example.com", "strong-password", "MFA Admin")
     token = store.create_session(user["user_id"])
-    monkeypatch.setenv("VALUSee_ADMIN_EMAILS", user["email"])
+    monkeypatch.setenv("WORTHPROOF_ADMIN_EMAILS", user["email"])
     monkeypatch.setattr("app.api.routes.auth_store", store)
     monkeypatch.setattr("app.auth.service.auth_store", store)
     client = TestClient(app)
@@ -176,7 +176,7 @@ def test_llm_traces_are_visible_only_to_admins(monkeypatch, tmp_path):
     buyer = store.register("buyer@example.com", "strong-password", "Buyer")
     admin_token = store.create_session(admin["user_id"])
     buyer_token = store.create_session(buyer["user_id"])
-    monkeypatch.setenv("VALUSee_ADMIN_EMAILS", admin["email"])
+    monkeypatch.setenv("WORTHPROOF_ADMIN_EMAILS", admin["email"])
     monkeypatch.setattr("app.api.routes.auth_store", store)
     monkeypatch.setattr("app.auth.service.auth_store", store)
     monkeypatch.setattr("app.api.routes.settings.app_env", "production")
@@ -217,4 +217,4 @@ def test_export_hides_session_secrets_and_owner_deletion_cleans_family():
         assert exported["sessions"] and "token_hash" not in exported["sessions"][0]
         store.delete_account(owner["user_id"])
         with store._session() as conn:
-            assert conn.execute("SELECT 1 FROM valuesee_family_member WHERE family_id=?", (family["family_id"],)).fetchone() is None
+            assert conn.execute("SELECT 1 FROM worthproof_family_member WHERE family_id=?", (family["family_id"],)).fetchone() is None

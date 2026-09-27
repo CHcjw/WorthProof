@@ -79,7 +79,7 @@ def search_web(query: str, limit: int = 6) -> tuple[list[dict[str, object]], dic
 
 
 def _configured_provider() -> tuple[str, str]:
-    preferred = _env_value("VALUSee_WEB_SEARCH_PROVIDER").strip().lower()
+    preferred = _env_value("WORTHPROOF_WEB_SEARCH_PROVIDER").strip().lower()
     keys = {
         "tavily": _env_value("TAVILY_API_KEY").strip(),
         "bocha": _env_value("BOCHA_API_KEY").strip(),
@@ -114,7 +114,7 @@ def _post_json(url: str, payload: dict[str, object], headers: dict[str, str]) ->
     request = Request(
         url,
         data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-        headers={"Accept": "application/json", "Content-Type": "application/json", "User-Agent": "ValuSee/0.1 web-search", **headers},
+        headers={"Accept": "application/json", "Content-Type": "application/json", "User-Agent": "WorthProof/0.1 web-search", **headers},
         method="POST",
     )
     try:

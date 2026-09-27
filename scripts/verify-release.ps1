@@ -14,8 +14,8 @@ if ($ready.status -ne "ok") { throw "Readiness probe failed" }
 $headers = @{}
 if ($MetricsToken) { $headers["X-Metrics-Token"] = $MetricsToken }
 $metrics = Invoke-WebRequest -Uri "$BaseUrl/metrics" -Headers $headers -UseBasicParsing -TimeoutSec 10
-if ($metrics.Content -notmatch "valuesee_http_requests_total") { throw "Metrics probe failed" }
-if ($metrics.Content -notmatch "valuesee_http_request_duration_seconds_bucket") { throw "Latency histogram is missing" }
+if ($metrics.Content -notmatch "worthproof_http_requests_total") { throw "Metrics probe failed" }
+if ($metrics.Content -notmatch "worthproof_http_request_duration_seconds_bucket") { throw "Latency histogram is missing" }
 $homeResponse = Invoke-WebRequest -Uri "$BaseUrl/" -UseBasicParsing -TimeoutSec 10
-if ($homeResponse.Content -notmatch "ValuSee") { throw "Web application probe failed" }
+if ($homeResponse.Content -notmatch "WorthProof") { throw "Web application probe failed" }
 Write-Host "Release probes passed for $BaseUrl"

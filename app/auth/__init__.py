@@ -1,1 +1,1 @@
-"""Authentication and household access boundaries for ValuSee."""
+"""Authentication and household access boundaries for WorthProof."""

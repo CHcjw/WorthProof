@@ -6,7 +6,7 @@ from app.core.database import connect_database
 def test_sqlite_path_can_be_isolated_by_environment(monkeypatch, tmp_path: Path):
     isolated = tmp_path / "isolated.db"
     default = tmp_path / "must-not-be-created.db"
-    monkeypatch.setenv("VALUSee_SQLITE_PATH", str(isolated))
+    monkeypatch.setenv("WORTHPROOF_SQLITE_PATH", str(isolated))
 
     connection = connect_database(default)
     try:

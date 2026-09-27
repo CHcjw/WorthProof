@@ -21,7 +21,7 @@ class LLMProvider:
         self.project_root = Path(__file__).resolve().parents[2]
         self.env_path = self.project_root / ".env"
         self.default_model = "gpt-5.5"
-        self._user_config_context: contextvars.ContextVar[dict[str, Any] | None] = contextvars.ContextVar("valuesee_user_llm_config", default=None)
+        self._user_config_context: contextvars.ContextVar[dict[str, Any] | None] = contextvars.ContextVar("worthproof_user_llm_config", default=None)
         self.known_agents = [
             "planner",
             "reporter",
@@ -387,7 +387,7 @@ class LLMProvider:
                     "Authorization": f"Bearer {config['api_key']}",
                     "Content-Type": "application/json",
                     "Accept": "application/json",
-                    "User-Agent": "ValuSee/0.1 agents",
+                    "User-Agent": "WorthProof/0.1 agents",
                 },
                 method="POST",
             )
@@ -510,8 +510,8 @@ class LLMProvider:
     def _vision_models(self, config: dict[str, str]) -> list[str]:
         if config.get("source") == "user_config" and config.get("vision_model"):
             return [str(config["vision_model"])]
-        configured = os.getenv("VALUSee_VISION_MODELS", "").strip()
-        primary = str(config.get("vision_model") or os.getenv("VALUSee_VISION_MODEL", "")).strip()
+        configured = os.getenv("WORTHPROOF_VISION_MODELS", "").strip()
+        primary = str(config.get("vision_model") or os.getenv("WORTHPROOF_VISION_MODEL", "")).strip()
         values = [item.strip() for item in configured.split(",") if item.strip()]
         if primary:
             values.insert(0, primary)
@@ -561,7 +561,7 @@ class LLMProvider:
                     "Authorization": f"Bearer {config['api_key']}",
                     "Content-Type": "application/json",
                     "Accept": "application/json",
-                    "User-Agent": "ValuSee/0.1 product-vision",
+                    "User-Agent": "WorthProof/0.1 product-vision",
                 },
                 method="POST",
             )
@@ -698,7 +698,7 @@ class LLMProvider:
     def plan_steps(self, goal: str, context: dict[str, Any], fallback_steps: list[str]) -> list[str]:
         fallback = "\n".join(f"- {item}" for item in fallback_steps)
         text = self.generate(
-            "你是 ValuSee 的任务规划器。请把用户目标拆成清晰、可执行、短句化的步骤。",
+            "你是 WorthProof 的任务规划器。请把用户目标拆成清晰、可执行、短句化的步骤。",
             f"目标：{goal}\n上下文：{context}",
             fallback,
             agent="planner",
@@ -709,7 +709,7 @@ class LLMProvider:
 
     def write_report(self, goal: str, facts: dict[str, Any], fallback: str) -> str:
         return self.generate(
-            "你是 ValuSee 的报告生成器。请基于事实生成结构清晰、可行动的中文 Markdown 报告，不要编造事实。",
+            "你是 WorthProof 的报告生成器。请基于事实生成结构清晰、可行动的中文 Markdown 报告，不要编造事实。",
             f"目标：{goal}\n事实：{facts}",
             fallback,
             agent="reporter",

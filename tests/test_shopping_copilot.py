@@ -43,7 +43,7 @@ class FakeCommerceProvider:
 
 def test_tavily_search_normalizes_traceable_results(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("TAVILY_API_KEY", "test-key")
-    monkeypatch.delenv("VALUSee_WEB_SEARCH_PROVIDER", raising=False)
+    monkeypatch.delenv("WORTHPROOF_WEB_SEARCH_PROVIDER", raising=False)
     monkeypatch.setattr(
         web_search,
         "urlopen",
