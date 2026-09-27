@@ -1,6 +1,4 @@
 <div align="center">
-  <img src="web/public/brand/logo-main.png" alt="WorthProof 见值" width="680" />
-
   <h1>WorthProof 见值</h1>
 
   <p><strong>买之前，先看清价值。</strong></p>
